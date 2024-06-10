@@ -1,17 +1,19 @@
 package com.example.SpringSecurity_Example.model;
 
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-public class UsersDto {
-	@NotNull(message = "아이디를 입력하세요")
-	private Long id;
+@Setter
+public class MemberDto {
+	@NotBlank(message = "loginId를 입력하세요")
+	private String loginId;
+
 	@NotBlank(message = "비밀번호를 입력하세요")
 	private String password;
-	
-	public Users toEntity() {
-		return new Users(this.id, this.password);
+
+	public Member toEntity() {
+		return new Member(this.loginId, this.password);
 	}
 }

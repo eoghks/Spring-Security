@@ -30,9 +30,9 @@ public class SecurityConfig {
 //				.logout((logout) -> logout
 //					.logoutSuccessUrl("/login")
 //					.invalidateHttpSession(true))
-//				.sessionManagement(session -> session
-//					.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-//				)
+				.sessionManagement(session -> session
+					.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+				)
 				.build();
 	}
 	
@@ -46,9 +46,9 @@ public class SecurityConfig {
 //			 );
 //	}
 //
-//	비밀번호 암호화 설정
-//	@Bean
-//	public BCryptPasswordEncoder bCryptPasswordEncoder() {
-//		return new BCryptPasswordEncoder();
-//	}
+	//비밀번호 암호화 
+	@Bean
+	public BCryptPasswordEncoder bCryptPasswordEncoder() {
+		return new BCryptPasswordEncoder();
+	}
 }

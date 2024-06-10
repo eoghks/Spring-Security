@@ -3,9 +3,9 @@ package com.example.SpringSecurity_Example.repository;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import com.example.SpringSecurity_Example.model.Users;
+import com.example.SpringSecurity_Example.model.Member;
 
 @Repository
-public interface UserRepository extends JpaRepository<Users, Integer>{
-
+public interface MemberRepository extends JpaRepository<Member, Integer>{
+	public Member findByLoginId(String loginId);
 }
