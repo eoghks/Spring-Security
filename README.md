@@ -32,8 +32,7 @@ $\bf \large Database\ 명세$
     
     | Column | Type | 설명 | 비고 |
     | --- | --- | --- | --- |
-    | id | Long | 사용자 Id | primary key
-     |
+    | id | Long | 사용자 Id | primary key |
     | password | varChar(64) | 로그인 Id | unique, not null |
 - crtab
     
