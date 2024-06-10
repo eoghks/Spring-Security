@@ -15,4 +15,9 @@ public class Users {
 	private Long id;
 	@Column(nullable = false)
 	private String password;
+	
+	public Users(Long id, String password) {
+		this.id =id;
+		this.password = password;
+	}
 }
