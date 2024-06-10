@@ -52,20 +52,5 @@ $\bf \large Database\ 명세$
 
 ---
 
-$\bf \large API 명세$
+자세한 정보는 https://knowing-parakeet-f9a.notion.site/eaff7432befc447b85348280e15cad2c?pvs=4 참조
 
-[제목 없는 데이터베이스](https://www.notion.so/69c716de526f49aaaef1b01939b3143f?pvs=21)
-
----
-
----
-
-$\bf \large 프로젝트\ 진행\ 과정$
-
-[제목 없는 데이터베이스](https://www.notion.so/711d38e04b974e1795e93090c7092e30?pvs=21)
-
----
-
-$\bf \large 코드$
-
-https://github.com/eoghks/Spring-Security
