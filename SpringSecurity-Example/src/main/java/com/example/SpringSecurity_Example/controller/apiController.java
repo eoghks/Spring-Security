@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.SpringSecurity_Example.model.MemberDto;
+import com.example.SpringSecurity_Example.model.dto.MemberDto;
 import com.example.SpringSecurity_Example.service.MemberService;
 
 import jakarta.validation.Valid;

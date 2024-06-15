@@ -1,4 +1,4 @@
-package com.example.SpringSecurity_Example.model;
+package com.example.SpringSecurity_Example.model.dto;
 
 import lombok.Getter;
 

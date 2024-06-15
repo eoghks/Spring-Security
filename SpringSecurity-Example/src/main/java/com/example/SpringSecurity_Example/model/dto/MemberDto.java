@@ -1,4 +1,6 @@
-package com.example.SpringSecurity_Example.model;
+package com.example.SpringSecurity_Example.model.dto;
+
+import com.example.SpringSecurity_Example.model.entity.Member;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

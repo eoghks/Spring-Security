@@ -1,4 +1,4 @@
-package com.example.SpringSecurity_Example.model;
+package com.example.SpringSecurity_Example.model.entity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
