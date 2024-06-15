@@ -30,4 +30,13 @@ public class MemberServiceImpl implements MemberService {
 		member.setPassword(encoder.encode(member.getPassword()));
 		memberRepository.save(member);
 	}
+
+	@Override
+	public String login(MemberDto memberDto) throws Exception {
+		Member member = memberRepository.findByLoginId(memberDto.getLoginId());
+		if(member != null || encoder.matches(memberDto.getPassword(), member.getPassword()) == false) {
+			throw new UserDefinedException("id 또는 password를 확인하세요.");
+		}
+		return "test 성공";
+	}
 }

@@ -25,6 +25,12 @@ public class apiController {
 		return new ResponseEntity<>( message, HttpStatus.OK);
 	}
 
+	@PostMapping("/login")
+	public ResponseEntity<String> login(@Valid @RequestBody MemberDto memberDto) throws Exception {
+		String token = memberService.login(memberDto);
+		return ResponseEntity.status(HttpStatus.OK).body(token);
+	}
+
 	@GetMapping("/api1")
 	public ResponseEntity<String> api1() {
 		return new ResponseEntity<>("api1", HttpStatus.OK);
