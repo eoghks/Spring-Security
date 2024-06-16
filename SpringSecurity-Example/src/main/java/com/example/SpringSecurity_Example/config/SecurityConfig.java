@@ -10,10 +10,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.SpringSecurity_Example.handler.CustomAccessDeinedHandler;
-import com.example.SpringSecurity_Example.handler.CustomAuthenticationHandler;
-import com.example.SpringSecurity_Example.jwt.JwtAuthFilter;
-import com.example.SpringSecurity_Example.jwt.JwtUtil;
+import com.example.SpringSecurity_Example.config.handler.CustomAccessDeinedHandler;
+import com.example.SpringSecurity_Example.config.handler.CustomAuthenticationHandler;
+import com.example.SpringSecurity_Example.config.jwt.JwtAuthFilter;
+import com.example.SpringSecurity_Example.config.jwt.JwtExceptionfilter;
+import com.example.SpringSecurity_Example.config.jwt.JwtUtil;
 import com.example.SpringSecurity_Example.service.CustomUserDetailsService;
 
 import lombok.RequiredArgsConstructor;
@@ -22,6 +23,7 @@ import lombok.RequiredArgsConstructor;
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+	private final JwtExceptionfilter jwtExceptionfilter;
 	private final CustomUserDetailsService customUserDetailsService;
 	private final JwtUtil jwtUtil;
 	//인증이 안되 경우
@@ -47,6 +49,7 @@ public class SecurityConfig {
 				)
 				//jwt
 				.addFilterBefore(new JwtAuthFilter(customUserDetailsService, jwtUtil), UsernamePasswordAuthenticationFilter.class)
+				.addFilterBefore(jwtExceptionfilter, JwtAuthFilter.class)
 				//인증 및 인가 실패에 따른 Handler 작성
 				.exceptionHandling((exceptionHandling) -> exceptionHandling
 						.authenticationEntryPoint(authenticationHandler)

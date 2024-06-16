@@ -5,7 +5,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.SpringSecurity_Example.jwt.JwtUtil;
+import com.example.SpringSecurity_Example.config.jwt.JwtUtil;
 import com.example.SpringSecurity_Example.model.constant.RoleType;
 import com.example.SpringSecurity_Example.model.dto.MemberDto;
 import com.example.SpringSecurity_Example.model.entity.Member;

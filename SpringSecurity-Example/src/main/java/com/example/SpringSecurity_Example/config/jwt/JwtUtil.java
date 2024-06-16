@@ -1,4 +1,4 @@
-package com.example.SpringSecurity_Example.jwt;
+package com.example.SpringSecurity_Example.config.jwt;
 
 import java.security.Key;
 import java.util.Date;
@@ -10,6 +10,7 @@ import com.example.SpringSecurity_Example.model.security.CustomMemberInfoDto;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -55,17 +56,25 @@ public class JwtUtil {
 		try {
 			Jwts.parserBuilder().setSigningKey(this.key).build().parseClaimsJws(accessToken).getBody();
 			return true;
-		} catch (SecurityException | MalformedJwtException e) {
+		} catch (SecurityException e) {
 			log.info("Invalid JWT Token", e);
+			throw new JwtException("잘못된 JWT 시그니처");
+		} catch( MalformedJwtException e) {
+			log.info("Invalid JWT Token", e);
+			throw new JwtException("유효하지 않은 JWT 토큰");
 		} catch (ExpiredJwtException e) {
 			log.info("Expired JWT Token", e);
+			throw new JwtException("토큰 기한 만료");
 		} catch(UnsupportedJwtException e) {
 			log.info("Unsupported JWT Token", e);
+			throw new JwtException("Unsupported JWT Token");
 		} catch(IllegalArgumentException  e) {
 			log.info("JWT claims string is empty", e);
+			throw new JwtException("JWT claims string is empty");
+		} catch(Exception e) {
+			log.info("Invalid JWT Token", e);
+			throw new JwtException("JWT 토큰 오류 발생");
 		}
-
-		return false;
 	}
 
 	//Claim 정보 추출

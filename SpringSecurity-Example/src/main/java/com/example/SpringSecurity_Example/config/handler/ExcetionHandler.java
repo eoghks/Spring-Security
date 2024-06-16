@@ -1,4 +1,4 @@
-package com.example.SpringSecurity_Example.handler;
+package com.example.SpringSecurity_Example.config.handler;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

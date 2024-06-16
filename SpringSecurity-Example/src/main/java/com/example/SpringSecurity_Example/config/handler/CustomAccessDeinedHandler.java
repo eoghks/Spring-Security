@@ -1,11 +1,11 @@
-package com.example.SpringSecurity_Example.handler;
+package com.example.SpringSecurity_Example.config.handler;
 
 import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
 
 import com.example.SpringSecurity_Example.model.error.ApiError;
@@ -20,14 +20,14 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-public class CustomAuthenticationHandler implements AuthenticationEntryPoint{
+public class CustomAccessDeinedHandler implements AccessDeniedHandler{
 	private final ObjectMapper mapper;
 
 	@Override
-	public void commence(HttpServletRequest request, HttpServletResponse response,
-			AuthenticationException authException) throws IOException, ServletException {
-		String msg = "로그인이 필요합니다.";
-		log.info(msg, authException);
+	public void handle(HttpServletRequest request, HttpServletResponse response,
+			AccessDeniedException accessDeniedException) throws IOException, ServletException {
+		String msg = "권한이 없습니다.";
+		log.info(msg, accessDeniedException);
 
 		ApiError apiError = new ApiError();
 		apiError.getMsg().add(msg);
@@ -39,5 +39,7 @@ public class CustomAuthenticationHandler implements AuthenticationEntryPoint{
 		response.setStatus(HttpStatus.UNAUTHORIZED.value());
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write(result);
+
 	}
+
 }
