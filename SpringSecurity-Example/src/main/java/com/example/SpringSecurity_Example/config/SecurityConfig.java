@@ -10,6 +10,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.SpringSecurity_Example.handler.CustomAccessDeinedHandler;
+import com.example.SpringSecurity_Example.handler.CustomAuthenticationHandler;
 import com.example.SpringSecurity_Example.jwt.JwtAuthFilter;
 import com.example.SpringSecurity_Example.jwt.JwtUtil;
 import com.example.SpringSecurity_Example.service.CustomUserDetailsService;
@@ -22,6 +24,10 @@ import lombok.RequiredArgsConstructor;
 public class SecurityConfig {
 	private final CustomUserDetailsService customUserDetailsService;
 	private final JwtUtil jwtUtil;
+	//인증이 안되 경우
+	private final CustomAuthenticationHandler authenticationHandler;
+	//권한이 없는 경우
+	private final CustomAccessDeinedHandler accessDeinedHandler;
 
 	@Bean
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
@@ -39,7 +45,12 @@ public class SecurityConfig {
 					.requestMatchers("/api2/**").hasRole("admin")
 					.anyRequest().permitAll()
 				)
+				//jwt
 				.addFilterBefore(new JwtAuthFilter(customUserDetailsService, jwtUtil), UsernamePasswordAuthenticationFilter.class)
+				//인증 및 인가 실패에 따른 Handler 작성
+				.exceptionHandling((exceptionHandling) -> exceptionHandling
+						.authenticationEntryPoint(authenticationHandler)
+						.accessDeniedHandler(accessDeinedHandler))
 				.build();
 	}
 
