@@ -6,6 +6,6 @@ import org.springframework.stereotype.Repository;
 import com.example.SpringSecurity_Example.model.entity.Member;
 
 @Repository
-public interface MemberRepository extends JpaRepository<Member, Integer>{
+public interface MemberRepository extends JpaRepository<Member, Long>{
 	public Member findByLoginId(String loginId);
 }

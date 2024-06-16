@@ -3,7 +3,6 @@ package com.example.SpringSecurity_Example.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -31,17 +30,17 @@ public class apiController {
 		return ResponseEntity.status(HttpStatus.OK).body(token);
 	}
 
-	@GetMapping("/api1")
+	@PostMapping("/api1")
 	public ResponseEntity<String> api1() {
 		return new ResponseEntity<>("api1", HttpStatus.OK);
 	}
 
-	@GetMapping("/api2")
+	@PostMapping("/api2")
 	public ResponseEntity<String> api2() {
 		return new ResponseEntity<>("api2", HttpStatus.OK);
 	}
 
-	@GetMapping("/api3")
+	@PostMapping("/api3")
 	public ResponseEntity<String> api3() {
 		return new ResponseEntity<>("api3", HttpStatus.OK);
 	}
