@@ -27,7 +27,20 @@ $\bf \large 기술\ 스택$
 - Spring Security
 - PostgreSQL
 - JWT
-  
+
+---
+  $\bf \large 개발\ 기간\ 및\ 진행\ 과정$
+
+- 1차 개발
+    - 개발 기간:  2024-06-06 ~ 2024-06-17
+    
+    ![image](https://github.com/eoghks/Spring-Security/assets/62344247/5be5b73f-c12d-4cde-af8f-15c332a9a2da)
+
+    
+- 2차 개발
+    - 개발 예정
+    - 추가 예정 기능
+        - 추후 RefreshToken을 이용한 JWT Token 재발급 기능을 추가한다. (Redis 사용 예정<연구 필요!!>)
 ---
 
 $\bf \large Database\ 명세$
@@ -63,16 +76,6 @@ $\bf \large Database\ 명세$
 $\bf \large API 명세$
 ![image](https://github.com/eoghks/Spring-Security/assets/62344247/5c109c52-64e2-431a-bce1-c6e027d8cdd1)
 (자세한 API 명세서는 하단의 Notion을 참조하십시오.)
-  
----
-
-$\bf \large 프로젝트\ 진행\ 과정$
-![image](https://github.com/eoghks/Spring-Security/assets/62344247/72b58ed5-d068-4576-a4a9-93ade12db3ea)
-  
----
-
-$\bf \large 보완점$   
-추후 RefreshToken을 이용한 JWT Token 재발급 기능을 추가한다.
   
 ---
 $\bf \large Notion$  
