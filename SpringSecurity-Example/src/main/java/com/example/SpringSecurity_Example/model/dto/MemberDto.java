@@ -9,10 +9,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class MemberDto {
-	@NotBlank(message = "loginId를 입력하세요")
+	@NotBlank(message = "loginId를 입력하세요.")
 	private String loginId;
 
-	@NotBlank(message = "비밀번호를 입력하세요")
+	@NotBlank(message = "비밀번호를 입력하세요.")
 	private String password;
 
 	public Member toEntity() {

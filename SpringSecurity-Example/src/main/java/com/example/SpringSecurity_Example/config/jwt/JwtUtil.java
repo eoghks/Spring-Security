@@ -6,6 +6,7 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.example.SpringSecurity_Example.model.constant.MessageEnum;
 import com.example.SpringSecurity_Example.model.security.CustomMemberInfoDto;
 
 import io.jsonwebtoken.Claims;
@@ -57,23 +58,23 @@ public class JwtUtil {
 			Jwts.parserBuilder().setSigningKey(this.key).build().parseClaimsJws(accessToken).getBody();
 			return true;
 		} catch (SecurityException e) {
-			log.info("Invalid JWT Token", e);
-			throw new JwtException("잘못된 JWT 시그니처");
+			log.info(MessageEnum.InvalidJwtSignature.getLogMsg(), e);
+			throw new JwtException(MessageEnum.InvalidJwtSignature.getMsg());
 		} catch( MalformedJwtException e) {
-			log.info("Invalid JWT Token", e);
-			throw new JwtException("유효하지 않은 JWT 토큰");
+			log.info(MessageEnum.InvalidJwtToke.getLogMsg(), e);
+			throw new JwtException(MessageEnum.InvalidJwtToke.getMsg());
 		} catch (ExpiredJwtException e) {
-			log.info("Expired JWT Token", e);
-			throw new JwtException("토큰 기한 만료");
+			log.info(MessageEnum.ExpiredToken.getLogMsg(), e);
+			throw new JwtException(MessageEnum.ExpiredToken.getMsg());
 		} catch(UnsupportedJwtException e) {
-			log.info("Unsupported JWT Token", e);
-			throw new JwtException("Unsupported JWT Token");
+			log.info(MessageEnum.UnSupportedJwtToken.getLogMsg(), e);
+			throw new JwtException(MessageEnum.UnSupportedJwtToken.getMsg());
 		} catch(IllegalArgumentException  e) {
-			log.info("JWT claims string is empty", e);
-			throw new JwtException("JWT claims string is empty");
+			log.info(MessageEnum.EmptyJwtClaim.getLogMsg(), e);
+			throw new JwtException(MessageEnum.EmptyJwtClaim.getMsg());
 		} catch(Exception e) {
-			log.info("Invalid JWT Token", e);
-			throw new JwtException("JWT 토큰 오류 발생");
+			log.info(MessageEnum.JwtErrorOccurred.getLogMsg(), e);
+			throw new JwtException(MessageEnum.JwtErrorOccurred.getMsg());
 		}
 	}
 
