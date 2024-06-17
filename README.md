@@ -71,12 +71,7 @@ $\bf \large 프로젝트\ 진행\ 과정$
   
 ---
 
-$\bf \large 코드$
-https://github.com/eoghks/Spring-Security
-  
----
-
-**$\bf \large 보완점$**
+$\bf \large 보완점$ 
 추후 RefreshToken을 이용한 JWT Token 재발급 기능을 추가한다.
   
 ---
