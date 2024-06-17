@@ -62,10 +62,13 @@ $\bf \large Database\ 명세$
 ---
 
 $\bf \large API 명세$
+![image](https://github.com/eoghks/Spring-Security/assets/62344247/5c109c52-64e2-431a-bce1-c6e027d8cdd1)
+(자세한 API 명세서는 하단의 Notion을 참조하십시오.)
 
 ---
 
 $\bf \large 프로젝트\ 진행\ 과정$
+![image](https://github.com/eoghks/Spring-Security/assets/62344247/72b58ed5-d068-4576-a4a9-93ade12db3ea)
 
 ---
 
@@ -79,6 +82,6 @@ https://github.com/eoghks/Spring-Security
 
 추후 RefreshToken을 이용한 JWT Token 재발급 기능을 추가한다.
 ---
-
-자세한 정보는 https://knowing-parakeet-f9a.notion.site/eaff7432befc447b85348280e15cad2c?pvs=4 참조
+$\bf \large Notion$
+https://knowing-parakeet-f9a.notion.site/eaff7432befc447b85348280e15cad2c?pvs=4
 
