@@ -8,7 +8,8 @@ import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
 
-import com.example.SpringSecurity_Example.model.error.ApiError;
+import com.example.SpringSecurity_Example.model.constant.MessageEnum;
+import com.example.SpringSecurity_Example.model.vo.ApiErrorResultVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.ServletException;
@@ -26,11 +27,10 @@ public class CustomAuthenticationHandler implements AuthenticationEntryPoint{
 	@Override
 	public void commence(HttpServletRequest request, HttpServletResponse response,
 			AuthenticationException authException) throws IOException, ServletException {
-		String msg = "로그인이 필요합니다.";
-		log.info(msg, authException);
+		log.info(MessageEnum.NeedLoginId.getLogMsg(), authException);
 
-		ApiError apiError = new ApiError();
-		apiError.getMsg().add(msg);
+		ApiErrorResultVo apiError = new ApiErrorResultVo();
+		apiError.getMsgs().add(MessageEnum.NeedLoginId.getMsg());
 		apiError.setStatus(HttpStatus.UNAUTHORIZED.value());
 		apiError.setHttpStatus(HttpStatus.UNAUTHORIZED);
 		String result = mapper.writeValueAsString(apiError);

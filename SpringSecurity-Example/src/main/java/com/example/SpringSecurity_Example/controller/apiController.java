@@ -7,7 +7,11 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.SpringSecurity_Example.model.constant.MessageEnum;
 import com.example.SpringSecurity_Example.model.dto.MemberDto;
+import com.example.SpringSecurity_Example.model.vo.ApiResultVo;
+import com.example.SpringSecurity_Example.model.vo.LoginResultVo;
+import com.example.SpringSecurity_Example.model.vo.SingUpResultVo;
 import com.example.SpringSecurity_Example.service.MemberService;
 
 import jakarta.validation.Valid;
@@ -18,30 +22,34 @@ public class apiController {
 	private MemberService memberService;
 
 	@PostMapping("/signup")
-	public ResponseEntity<String> signup(@Valid @RequestBody MemberDto memberDto) throws Exception{
+	public ResponseEntity<SingUpResultVo> signup(@Valid @RequestBody MemberDto memberDto) throws Exception{
 		memberService.createUser(memberDto);
-		String message = memberDto.getLoginId().toString() + "의 회원가입 완료";
-		return new ResponseEntity<>( message, HttpStatus.OK);
+		SingUpResultVo result = new SingUpResultVo(memberDto.getLoginId(), MessageEnum.SignUpSuccess.getMsg());
+		return new ResponseEntity<>( result, HttpStatus.OK);
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<String> login(@Valid @RequestBody MemberDto memberDto) throws Exception {
+	public ResponseEntity<LoginResultVo> login(@Valid @RequestBody MemberDto memberDto) throws Exception {
 		String token = memberService.login(memberDto);
-		return ResponseEntity.status(HttpStatus.OK).body(token);
+		LoginResultVo result = new LoginResultVo(memberDto.getLoginId(), token, MessageEnum.SignUpSuccess.getMsg());
+		return ResponseEntity.status(HttpStatus.OK).body(result);
 	}
 
 	@PostMapping("/api1")
-	public ResponseEntity<String> api1() {
-		return new ResponseEntity<>("api1", HttpStatus.OK);
+	public ResponseEntity<ApiResultVo> api1() {
+		ApiResultVo result = new ApiResultVo(MessageEnum.ApiSucess.getMsg());
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 	@PostMapping("/api2")
-	public ResponseEntity<String> api2() {
-		return new ResponseEntity<>("api2", HttpStatus.OK);
+	public ResponseEntity<ApiResultVo> api2() {
+		ApiResultVo result = new ApiResultVo(MessageEnum.ApiSucess.getMsg());
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 	@PostMapping("/api3")
-	public ResponseEntity<String> api3() {
-		return new ResponseEntity<>("api3", HttpStatus.OK);
+	public ResponseEntity<ApiResultVo> api3() {
+		ApiResultVo result = new ApiResultVo(MessageEnum.ApiSucess.getMsg());
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 }

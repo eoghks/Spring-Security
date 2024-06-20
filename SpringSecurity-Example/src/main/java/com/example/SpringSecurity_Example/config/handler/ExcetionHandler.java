@@ -7,8 +7,8 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
-import com.example.SpringSecurity_Example.model.error.ApiError;
 import com.example.SpringSecurity_Example.model.error.UserDefinedException;
+import com.example.SpringSecurity_Example.model.vo.ApiErrorResultVo;
 
 
 @RestControllerAdvice(basePackages = "com.example.SpringSecurity_Example")
@@ -16,8 +16,8 @@ public class ExcetionHandler{
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<?> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e){
 		e.printStackTrace();
-		ApiError apiError = new ApiError();
-		e.getBindingResult().getAllErrors().stream().forEach(error -> apiError.getMsg().add(error.getDefaultMessage()));
+		ApiErrorResultVo apiError = new ApiErrorResultVo();
+		e.getBindingResult().getAllErrors().stream().forEach(error -> apiError.getMsgs().add(error.getDefaultMessage()));
 		apiError.setStatus(HttpStatus.BAD_REQUEST.value());
 		apiError.setHttpStatus(HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(e.getStatusCode()).body(apiError);
@@ -26,8 +26,8 @@ public class ExcetionHandler{
 	@ExceptionHandler(UserDefinedException.class)
 	public ResponseEntity<?> MethodArgumentNotValidExceptionHandler(UserDefinedException e){
 		e.printStackTrace();
-		ApiError apiError = new ApiError();
-		apiError.getMsg().add(e.getMessage());
+		ApiErrorResultVo apiError = new ApiErrorResultVo();
+		apiError.getMsgs().add(e.getMessage());
 		apiError.setStatus(HttpStatus.BAD_REQUEST.value());
 		apiError.setHttpStatus(HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);
@@ -36,8 +36,8 @@ public class ExcetionHandler{
 	@ExceptionHandler(UsernameNotFoundException.class)
 	public ResponseEntity<?> MethodArgumentNotValidExceptionHandler(UsernameNotFoundException e){
 		e.printStackTrace();
-		ApiError apiError = new ApiError();
-		apiError.getMsg().add(e.getMessage());
+		ApiErrorResultVo apiError = new ApiErrorResultVo();
+		apiError.getMsgs().add(e.getMessage());
 		apiError.setStatus(HttpStatus.BAD_REQUEST.value());
 		apiError.setHttpStatus(HttpStatus.BAD_REQUEST);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(apiError);

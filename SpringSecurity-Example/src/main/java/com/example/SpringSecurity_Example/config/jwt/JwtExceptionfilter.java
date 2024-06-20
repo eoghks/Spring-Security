@@ -7,7 +7,7 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.SpringSecurity_Example.model.error.ApiError;
+import com.example.SpringSecurity_Example.model.vo.ApiErrorResultVo;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.jsonwebtoken.JwtException;
@@ -36,14 +36,14 @@ public class JwtExceptionfilter extends OncePerRequestFilter{
 	private void setErrorResponse(HttpServletRequest request, HttpServletResponse response,
 			JwtException e) throws IOException, ServletException {
 
-		ApiError apiError = new ApiError();
-		apiError.getMsg().add(e.getMessage());
-		apiError.setStatus(HttpStatus.FORBIDDEN.value());
-		apiError.setHttpStatus(HttpStatus.FORBIDDEN);
+		ApiErrorResultVo apiError = new ApiErrorResultVo();
+		apiError.getMsgs().add(e.getMessage());
+		apiError.setStatus(HttpStatus.BAD_REQUEST.value());
+		apiError.setHttpStatus(HttpStatus.BAD_REQUEST);
 		String result = mapper.writeValueAsString(apiError);
 
 		response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-		response.setStatus(HttpStatus.FORBIDDEN.value());
+		response.setStatus(HttpStatus.BAD_REQUEST.value());
 		response.setCharacterEncoding("UTF-8");
 		response.getWriter().write(result);
 	}

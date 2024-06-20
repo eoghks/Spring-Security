@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.SpringSecurity_Example.model.constant.MessageEnum;
 import com.example.SpringSecurity_Example.model.constant.RoleType;
 import com.example.SpringSecurity_Example.model.entity.Member;
 import com.example.SpringSecurity_Example.model.security.CustomMemberInfoDto;
@@ -26,7 +27,7 @@ public class CustomUserDetailsService implements UserDetailsService{
 	@Override
 	public UserDetails loadUserByUsername(String id) throws UsernameNotFoundException {
 		Member member = memberRepository.findById(Long.parseLong(id))
-				.orElseThrow(() -> new UsernameNotFoundException("User 정보를 찾을 수 없습니다."));
+				.orElseThrow(() -> new UsernameNotFoundException(MessageEnum.NotFoundUser.getMsg()));
 		CustomMemberInfoDto info = modelMapper.map(member, CustomMemberInfoDto.class);
 		if(member.getId() == 1) {
 			info.setRole(RoleType.Admin);
