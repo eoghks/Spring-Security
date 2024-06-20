@@ -30,7 +30,6 @@ public class JwtExceptionfilter extends OncePerRequestFilter{
 		} catch(JwtException e) {
 			setErrorResponse(request, response, e);
 		}
-
 	}
 
 	private void setErrorResponse(HttpServletRequest request, HttpServletResponse response,

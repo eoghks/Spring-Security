@@ -31,7 +31,7 @@ public class apiController {
 	@PostMapping("/login")
 	public ResponseEntity<LoginResultVo> login(@Valid @RequestBody MemberDto memberDto) throws Exception {
 		String token = memberService.login(memberDto);
-		LoginResultVo result = new LoginResultVo(memberDto.getLoginId(), token, MessageEnum.SignUpSuccess.getMsg());
+		LoginResultVo result = new LoginResultVo(memberDto.getLoginId(), token, MessageEnum.LoginSuccess.getMsg());
 		return ResponseEntity.status(HttpStatus.OK).body(result);
 	}
 

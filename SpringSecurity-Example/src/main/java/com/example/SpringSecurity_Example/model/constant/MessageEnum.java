@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MessageEnum {
 	SignUpSuccess("회원가입 성공!!", "Singup Success!!"),
-	LoginSucess("로그인 성공!!", "Login Success!!"),
+	LoginSuccess("로그인 성공!!", "Login Success!!"),
 	ApiSucess("api 호출 성공!!", "Api Success!!"),
 	ExistLoginId("이미 사용중인 로그인 ID 입니다.", "Exist login id"),
 	CheckLoginIdOrPassword("로그인 ID 또는 비밀번호를 확인하세요.", "check loign id or password"),

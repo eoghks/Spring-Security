@@ -35,7 +35,7 @@ public class SecurityConfig {
 	public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
 		return http
 				//REST API 에서는 basic과  csrf보안을 사용하지 않는다.
-				//.httpBasic(AbstractHttpConfigurer::disable)
+				.httpBasic(AbstractHttpConfigurer::disable)
 				.csrf(AbstractHttpConfigurer::disable)
 				.formLogin(AbstractHttpConfigurer::disable)
 				.sessionManagement(session -> session
