@@ -4,14 +4,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import com.example.SpringSecurity_Example.model.error.ApiError;
 import com.example.SpringSecurity_Example.model.error.UserDefinedException;
 
 
-@ControllerAdvice
+@RestControllerAdvice(basePackages = "com.example.SpringSecurity_Example")
 public class ExcetionHandler{
 	@ExceptionHandler(MethodArgumentNotValidException.class)
 	public ResponseEntity<?> MethodArgumentNotValidExceptionHandler(MethodArgumentNotValidException e){
