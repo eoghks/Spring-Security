@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.SpringSecurity_Example.model.annotation.PerLogging;
 import com.example.SpringSecurity_Example.model.constant.MessageEnum;
 import com.example.SpringSecurity_Example.model.dto.MemberDto;
 import com.example.SpringSecurity_Example.model.vo.ApiResultVo;
@@ -36,18 +37,21 @@ public class apiController {
 	}
 
 	@PostMapping("/api1")
+	@PerLogging
 	public ResponseEntity<ApiResultVo> api1() {
 		ApiResultVo result = new ApiResultVo(MessageEnum.ApiSucess.getMsg());
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 	@PostMapping("/api2")
+	@PerLogging
 	public ResponseEntity<ApiResultVo> api2() {
 		ApiResultVo result = new ApiResultVo(MessageEnum.ApiSucess.getMsg());
 		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
 
 	@PostMapping("/api3")
+	@PerLogging
 	public ResponseEntity<ApiResultVo> api3() {
 		ApiResultVo result = new ApiResultVo(MessageEnum.ApiSucess.getMsg());
 		return new ResponseEntity<>(result, HttpStatus.OK);

@@ -16,4 +16,10 @@ public class LogAspect {
 		log.info("User call api(execution)");
 		return point.proceed();
 	}
+
+	@Around("@annotation(PerLogging)")
+	public Object logApi(ProceedingJoinPoint point) throws Throwable {
+		log.info("User call api(annotation)");
+		return point.proceed();
+	}
 }
