@@ -10,16 +10,18 @@ import lombok.extern.slf4j.Slf4j;
 @Component
 @Slf4j
 @Aspect
-public class LogAspect {
-	@Around("execution(* com.example.SpringSecurity_Example.controller.apiController.api*(..))")
+public class AspectConfig {
+	@Around("execution(* com.example.SpringSecurity_Example.controller.apiController.*(..))")
 	public Object logAll(ProceedingJoinPoint point) throws Throwable {
-		log.info("User call api(execution)");
-		return point.proceed();
+		log.info("aop(execution) 시작!");
+		Object obj = point.proceed();
+		log.info("aop(execution) 종료!");
+		return obj;
 	}
 
 	@Around("@annotation(PerLogging)")
 	public Object logApi(ProceedingJoinPoint point) throws Throwable {
-		log.info("User call api(annotation)");
+		log.info("aop(annotation)");
 		return point.proceed();
 	}
 }

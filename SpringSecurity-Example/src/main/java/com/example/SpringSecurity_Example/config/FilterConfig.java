@@ -1,8 +1,11 @@
-package com.example.SpringSecurity_Example.config.filter;
+package com.example.SpringSecurity_Example.config;
 
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import com.example.SpringSecurity_Example.config.filter.FirstFilter;
+import com.example.SpringSecurity_Example.config.filter.SecondFilter;
 
 import jakarta.servlet.Filter;
 

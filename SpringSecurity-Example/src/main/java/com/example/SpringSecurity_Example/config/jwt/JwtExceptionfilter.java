@@ -30,6 +30,7 @@ public class JwtExceptionfilter extends OncePerRequestFilter{
 		try {
 			log.info("==========JWT 필터 시작!(Bean)==========");
 			filterChain.doFilter(request, response);
+			log.info("==========JWT 필터 종료!(Bean)==========");
 		} catch(JwtException e) {
 			setErrorResponse(request, response, e);
 		}
