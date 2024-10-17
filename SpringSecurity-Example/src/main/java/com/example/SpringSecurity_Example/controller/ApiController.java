@@ -18,7 +18,7 @@ import com.example.SpringSecurity_Example.service.MemberService;
 import jakarta.validation.Valid;
 
 @RestController
-public class apiController {
+public class ApiController {
 	@Autowired
 	private MemberService memberService;
 
