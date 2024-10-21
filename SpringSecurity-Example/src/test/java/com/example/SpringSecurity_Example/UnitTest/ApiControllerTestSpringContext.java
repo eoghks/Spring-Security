@@ -34,6 +34,7 @@ import com.example.SpringSecurity_Example.service.MemberService;
 import com.google.gson.Gson;
 
 @WebMvcTest(ApiController.class)
+//@Import(SecurityConfig.class) //나는 사용 불가.. Spring Security에 쓰는 당양한 빈들 역시 Import 시켜줘야한다. 예씨 코드로 나둠
 @WithMockUser
 public class ApiControllerTestSpringContext {
 	@MockBean
