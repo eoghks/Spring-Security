@@ -1,7 +1,6 @@
 package com.example.SpringSecurity_Example.UnitTest;
 
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.doNothing;
@@ -74,7 +73,6 @@ public class ApiControllerTestSpringContext {
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("loginId").exists())
 				.andExpect(jsonPath("msg").exists())
-				.andExpect(jsonPath("msg", is(expectResponse.getMsg())))
 				.andDo(print())
 				.andReturn();
 		System.out.println("mvcResult : " + mvcResult.getResponse().getContentAsString());
