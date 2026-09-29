@@ -34,7 +34,10 @@ class LoginFailureConcurrencyIntegrationTest extends IntegrationTestSupport {
 		signup("failrace01", PASSWORD);
 		Long userId = userRepository.findByUsername("failrace01").orElseThrow().getId();
 		List<Callable<Boolean>> tasks = IntStream.range(0, 10)
-				.<Callable<Boolean>>mapToObj(i -> () -> loginAttemptService.recordFailure(userId))
+				.<Callable<Boolean>>mapToObj(i -> () -> {
+					loginAttemptService.recordFailure(userId);
+					return true;
+				})
 				.toList();
 
 		Concurrently.run(tasks);

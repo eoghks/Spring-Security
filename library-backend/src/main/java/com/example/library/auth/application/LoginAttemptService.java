@@ -25,13 +25,9 @@ public class LoginAttemptService {
 	private final ApplicationEventPublisher eventPublisher;
 	private final Clock clock;
 
-	/**
-	 * 실패를 기록한다.
-	 *
-	 * @return 기록 후 계정이 잠긴 상태면 true
-	 */
+	/** 실패를 기록하고, 한도에 도달했으면 잠근다. 이미 잠긴 계정도 횟수는 계속 올린다 */
 	@Transactional
-	public boolean recordFailure(Long userId) {
+	public void recordFailure(Long userId) {
 		userRepository.incrementFailedLoginCount(userId);
 		int maxAttempts = securityProperties.maxLoginAttempts();
 		// 증가된 DB 값으로 판정하고, 조건부 UPDATE 라 동시에 한도에 닿아도 잠금 처리는 한 요청만 한다
@@ -39,7 +35,6 @@ public class LoginAttemptService {
 			log.warn("로그인 {}회 실패로 계정 잠금: userId={}", maxAttempts, userId);
 			eventPublisher.publishEvent(new AuthzChangedEvent.UserChanged(userId));
 		}
-		return userRepository.existsByIdAndLockedTrue(userId);
 	}
 
 	@Transactional

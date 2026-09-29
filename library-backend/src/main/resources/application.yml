@@ -41,6 +41,9 @@ app:
   security:
     # 연속 로그인 실패 허용 횟수(도달 시 잠금, 관리자가 해제)
     max-login-attempts: 5
+    login:
+      # 클라이언트 IP 당 1분 동안 허용하는 로그인 실패 횟수(도달 시 그 분 동안 429 TOO_MANY_REQUESTS)
+      max-failures-per-minute: ${LOGIN_MAX_FAILURES_PER_MINUTE:30}
     # X-Forwarded-For 를 신뢰할 프록시 IP·CIDR (비어 있으면 항상 remoteAddr 사용)
     trusted-proxies: ${TRUSTED_PROXIES:}
     api-key:

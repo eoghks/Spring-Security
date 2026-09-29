@@ -42,13 +42,14 @@ class AuthIntegrationTest extends IntegrationTestSupport {
 	}
 
 	@Test
-	@DisplayName("로그인 5회 실패 시 계정이 잠기고 올바른 비밀번호로도 로그인할 수 없다")
+	@DisplayName("로그인 5회 실패 시 계정이 잠기고, 잠금 여부는 올바른 비밀번호를 댄 경우에만 알려 준다")
 	void lockAfterFiveFailures() throws Exception {
 		signup("locktest01", "Passw0rd!");
-		for (int i = 0; i < 4; i++) {
+		for (int i = 0; i < 5; i++) {
 			postLogin("locktest01", "bad").andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
 		}
-		postLogin("locktest01", "bad").andExpect(jsonPath("$.code").value("ACCOUNT_LOCKED"));
+		// 잠긴 뒤에도 틀린 비밀번호에는 잠금 여부를 드러내지 않는다
+		postLogin("locktest01", "bad").andExpect(jsonPath("$.code").value("INVALID_CREDENTIALS"));
 
 		postLogin("locktest01", "Passw0rd!")
 				.andExpect(status().isUnauthorized())

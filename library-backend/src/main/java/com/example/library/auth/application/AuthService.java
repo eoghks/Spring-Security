@@ -9,6 +9,7 @@ import com.example.library.authz.cache.UserAuthSnapshot;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
 import com.example.library.common.net.IpPatterns;
+import com.example.library.security.LoginFailureLimiter;
 import com.example.library.user.domain.User;
 import com.example.library.user.domain.UserRepository;
 import java.time.Clock;
@@ -21,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 로그인·토큰 재발급·로그아웃.
  * 비밀번호가 맞아도 사용자 접속 조건(IP·기간·요일·시간)을 벗어나면 토큰을 발급하지 않는다(재발급도 동일).
+ * 계정 잠금 여부는 비밀번호가 맞은 뒤에만 알려 준다 — 틀린 비밀번호에는 잠금 여부와 무관하게 같은 INVALID_CREDENTIALS 다.
+ * 로그인 실패는 계정별 잠금과 별개로 클라이언트 IP 별로도 세어, 한도를 넘긴 IP 는 그 분 동안 429 로 거절한다.
  */
 @Slf4j
 @Service
@@ -32,6 +35,7 @@ public class AuthService {
 	private final RefreshTokenService refreshTokenService;
 	private final JwtProvider jwtProvider;
 	private final AuthzCache authzCache;
+	private final LoginFailureLimiter loginFailureLimiter;
 	private final Clock clock;
 
 	/** 존재하지 않는 아이디도 같은 시간만큼 해시 비교를 해 계정 존재 여부가 응답 시간으로 드러나지 않게 한다 */
@@ -39,13 +43,14 @@ public class AuthService {
 
 	public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder,
 			LoginAttemptService loginAttemptService, RefreshTokenService refreshTokenService,
-			JwtProvider jwtProvider, AuthzCache authzCache, Clock clock) {
+			JwtProvider jwtProvider, AuthzCache authzCache, LoginFailureLimiter loginFailureLimiter, Clock clock) {
 		this.userRepository = userRepository;
 		this.passwordEncoder = passwordEncoder;
 		this.loginAttemptService = loginAttemptService;
 		this.refreshTokenService = refreshTokenService;
 		this.jwtProvider = jwtProvider;
 		this.authzCache = authzCache;
+		this.loginFailureLimiter = loginFailureLimiter;
 		this.clock = clock;
 		this.dummyHash = passwordEncoder.encode("dummy-password-for-timing");
 	}
@@ -54,14 +59,18 @@ public class AuthService {
 	 * 로그인. 접속 조건 위반은 비밀번호 확인 뒤에 검사하며 로그인 실패 횟수에 넣지 않는다.
 	 */
 	public TokenResponse login(LoginRequest request, String clientIp) {
+		if (loginFailureLimiter.isBlocked(clientIp)) {
+			throw new BusinessException(ErrorCode.TOO_MANY_REQUESTS);
+		}
 		User user = userRepository.findByUsername(request.username())
-				.orElseThrow(() -> invalidCredentialsAfterDummyCheck(request.password()));
+				.orElseThrow(() -> invalidCredentialsAfterDummyCheck(request.password(), clientIp));
+		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+			loginAttemptService.recordFailure(user.getId());
+			loginFailureLimiter.recordFailure(clientIp);
+			throw new BusinessException(ErrorCode.INVALID_CREDENTIALS);
+		}
 		if (user.isLocked()) {
 			throw new BusinessException(ErrorCode.ACCOUNT_LOCKED);
-		}
-		if (!passwordEncoder.matches(request.password(), user.getPassword())) {
-			boolean locked = loginAttemptService.recordFailure(user.getId());
-			throw new BusinessException(locked ? ErrorCode.ACCOUNT_LOCKED : ErrorCode.INVALID_CREDENTIALS);
 		}
 		UserAuthSnapshot snapshot = authzCache.findUser(user.getId())
 				.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_CREDENTIALS));
@@ -106,8 +115,9 @@ public class AuthService {
 		return TokenResponse.bearer(accessToken, refreshToken, jwtProvider.accessTokenTtlSeconds());
 	}
 
-	private BusinessException invalidCredentialsAfterDummyCheck(String rawPassword) {
+	private BusinessException invalidCredentialsAfterDummyCheck(String rawPassword, String clientIp) {
 		passwordEncoder.matches(rawPassword, dummyHash);
+		loginFailureLimiter.recordFailure(clientIp);
 		return new BusinessException(ErrorCode.INVALID_CREDENTIALS);
 	}
 }

@@ -11,7 +11,7 @@ Spring Security 6 로 **메뉴 · 액션 · URL** 모델의 동적 인가를 구
 - **URL 기반 인가** — 커스텀 `AuthorizationManager` 하나가 `action_urls` 를 `PathPattern` 으로 판정.
   구체적인 패턴 우선, 같은 URL 은 여러 액션 중 하나만 있어도 통과(OR), **미등록 URL 은 403(fail-closed)**
 - **JWT + Refresh 토큰 회전** — Access 15분(subject=userId 만), Refresh 7일(DB 에 해시만, 재사용 탐지)
-- **로그인 5회 실패 잠금**, 관리자 해제
+- **로그인 5회 실패 잠금**(잠금 여부는 비밀번호가 맞을 때만 응답), 관리자 해제, IP 별 로그인 실패 1분 30회 초과 시 429
 - **분산 권한 캐시(Hazelcast embedded)** — 역할 권한·사용자 역할·접속 조건·API Key 를 캐시하고 변경 커밋 후 해당 키만 evict
 - **사용자 접속 조건** — IP/CIDR, 기간, 요일, 시간대(자정 넘는 구간 포함), 신뢰 프록시 기반 클라이언트 IP
 - **API Key** — `X-API-KEY` 헤더, 사용자와 같은 액션 체계로 권한 부여, 원문 1회 표시·해시 저장, 허용 IP,
@@ -70,7 +70,7 @@ docker compose down -v                     # 정리(볼륨까지 삭제)
 주요 환경 변수: `JWT_SECRET`(Base64·32바이트 이상, 기본 개발 프로필 외 필수), `TRUSTED_PROXIES`(예: `10.0.0.0/8`),
 `HAZELCAST_MEMBERS`(예: `10.0.0.11,10.0.0.12`), `HAZELCAST_INTERFACE`(기본 `127.0.0.1`, 다중 노드는 사설 대역 예: `10.0.0.*`),
 `HAZELCAST_PORT`, `HAZELCAST_CLUSTER`,
-`API_KEY_NEGATIVE_CACHE_TTL`(기본 `60s`), `API_KEY_MAX_FAILURES_PER_MINUTE`(기본 `20`).
+`API_KEY_NEGATIVE_CACHE_TTL`(기본 `60s`), `API_KEY_MAX_FAILURES_PER_MINUTE`(기본 `20`), `LOGIN_MAX_FAILURES_PER_MINUTE`(기본 `30`).
 
 ### 프론트엔드 (포트 5173)
 

@@ -18,7 +18,9 @@ import org.springframework.test.web.servlet.MockMvc;
  */
 @SpringBootTest(properties = {
 		"app.hazelcast.cluster-name=library-test-${random.uuid}",
-		"app.hazelcast.port=5901"
+		"app.hazelcast.port=5901",
+		// 여러 테스트가 같은 IP(127.0.0.1)로 로그인 실패를 쌓으므로 IP 단위 제한은 사실상 끈다(전용 테스트에서 따로 검증)
+		"app.security.login.max-failures-per-minute=1000"
 })
 @AutoConfigureMockMvc
 public abstract class IntegrationTestSupport {

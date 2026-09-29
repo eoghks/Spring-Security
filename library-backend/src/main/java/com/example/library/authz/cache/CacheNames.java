@@ -22,6 +22,9 @@ public final class CacheNames {
 	/** "클라이언트 IP|분" → API Key 인증 실패 횟수(분 단위 버킷) */
 	public static final String API_KEY_FAILURES = "api-key-failures";
 
+	/** "클라이언트 IP|분" → 로그인 실패 횟수(분 단위 버킷) */
+	public static final String LOGIN_FAILURES = "login-failures";
+
 	/** 인가 규칙(action_urls) 재로딩 알림 토픽 */
 	public static final String AUTHZ_RELOAD_TOPIC = "authz-rules-reload";
 

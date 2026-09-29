@@ -44,8 +44,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("update User u set u.failedLoginCount = 0 where u.id = :id and u.failedLoginCount > 0")
 	int resetFailedLoginCount(@Param("id") Long id);
 
-	boolean existsByIdAndLockedTrue(Long id);
-
 	/** 아이디·이름 부분 일치 검색 (빈 문자열이면 전체) */
 	@EntityGraph(attributePaths = "role")
 	@Query("""

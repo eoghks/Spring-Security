@@ -38,6 +38,7 @@ public class HazelcastConfig {
 			config.addMapConfig(new MapConfig(mapName).setTimeToLiveSeconds(properties.timeToLiveSeconds()));
 		}
 		config.addMapConfig(new MapConfig(CacheNames.API_KEY_FAILURES).setTimeToLiveSeconds(FAILURE_BUCKET_TTL_SECONDS));
+		config.addMapConfig(new MapConfig(CacheNames.LOGIN_FAILURES).setTimeToLiveSeconds(FAILURE_BUCKET_TTL_SECONDS));
 		return config;
 	}
 
