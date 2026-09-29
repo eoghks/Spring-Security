@@ -18,6 +18,7 @@
 요청
  │
  ├─ ApiKeyAuthenticationFilter     X-API-KEY 가 있으면 검증. 무효면 즉시 401(JWT 폴백 없음)
+ │                                  (IP 별 실패 한도 초과 시 조회 없이 429 TOO_MANY_REQUESTS)
  ├─ JwtAuthenticationFilter        Bearer 토큰 검증 → userId 로 캐시에서 역할·잠금 조회
  │                                  (무효·만료면 인증하지 않고 사유만 기록 → 보호 URL 이면 401 TOKEN_EXPIRED 등)
  ├─ AccessConditionFilter          인증된 주체의 접속 조건 검사. 위반 → 403 ACCESS_CONDITION_DENIED
@@ -66,13 +67,35 @@ JWT 에 역할·권한을 넣으면 관리자가 권한을 회수해도 토큰 �
 |---|---|---|
 | `user-auth` | userId → 역할 ID·잠금·접속 조건 | 역할 변경, 잠금/해제, 접속 조건 저장·삭제 |
 | `role-actions` | roleId → 보유 액션 코드 집합 | 역할 권한 저장 |
-| `api-keys` | 키 해시 → 부여 액션·허용 IP·만료·폐기 | API Key 폐기 |
+| `api-keys` | 키 해시 → 부여 액션·허용 IP·만료·폐기 | API Key 발급·폐기 |
+| `api-key-misses` | DB 에 없는 키 해시 → 표시(음성 캐시, 항목 TTL 60초) | API Key 발급·폐기(같은 해시) |
+| `api-key-failures` | "IP\|분" → API Key 인증 실패 횟수(TTL 120초) | 자연 만료 |
 
 - **캐시 미스면 DB 에서 읽어 채운다. 미스를 통과로 취급하지 않는다.**
 - evict 는 `@TransactionalEventListener(AFTER_COMMIT)` 에서만 한다. 커밋 전에 지우면 다른 요청이 옛 DB 값을 다시 적재할 수 있다.
 - 값 객체는 `Serializable`(serialVersionUID 명시). `Optional` 은 직렬화되지 않으므로 필드는 nullable 로 두고 접근자에서 `Optional` 로 감싼다.
 - 안전장치: 모든 IMap 에 TTL 600초. evict 가 어떤 이유로 누락돼도 오래된 권한이 무기한 남지 않는다.
 - 알려진 경합: "캐시 미스 → DB 읽기" 와 "evict" 가 동시에 일어나면 옛 값이 다시 들어갈 수 있다(짧은 창). TTL 이 상한을 보장한다.
+
+### API Key 무차별 대입·DB 부하 방어
+
+형식은 맞지만 존재하지 않는 키를 대량으로 보내면 요청마다 DB 조회가 일어난다. 두 가지로 막는다.
+
+1. **음성 캐시** — DB 에도 없는 해시는 `api-key-misses` 에 짧은 TTL(`app.security.api-key.negative-cache-ttl`, 기본 60초)로 두고,
+   그동안 같은 해시는 DB 를 다시 조회하지 않고 바로 401 이다. 키를 발급·폐기하면 커밋 후 그 해시의 스냅샷과 음성 캐시를 함께 지운다
+   (SHA-256 충돌은 사실상 없지만, 발급 직후 같은 해시가 "없음"으로 남는 경우를 규칙으로 차단).
+   무작위 키를 매번 바꿔 보내는 공격에는 음성 캐시가 듣지 않으므로 아래 횟수 제한이 함께 필요하다.
+2. **IP 별 실패 횟수 제한** — API Key 인증 실패(형식 오류·미등록·폐기·만료)를 클라이언트 IP(`ClientIpResolver` 기준) 별로
+   분 단위 버킷(`IP|epoch분`)에 센다. 카운터는 Hazelcast IMap 에 `EntryProcessor` 로 원자적으로 더하므로 여러 노드가 같은 값을 본다.
+   한 분 동안 실패가 한도(`app.security.api-key.max-failures-per-minute`, 기본 20)에 도달하면 **그 분이 끝날 때까지** 해당 IP 의
+   `X-API-KEY` 요청은 캐시·DB 조회 없이 **429 `TOO_MANY_REQUESTS`**(`Retry-After`: 남은 초)로 거절한다.
+   별도 라이브러리(Bucket4j 등)는 넣지 않았다.
+
+트레이드오프
+- 고정 창(분 경계)이라 경계 직전·직후에 몰아 보내면 짧은 순간 최대 2배(40회)까지 시도할 수 있다. 슬라이딩 창보다 단순한 대신의 한계다.
+- 차단 중에는 같은 IP 의 **유효한 키도** 거절된다(NAT 뒤 여러 클라이언트가 한 IP 를 공유하면 함께 막힐 수 있음). 무차별 대입 억제를 우선했다.
+- 클라이언트 IP 는 신뢰 프록시 설정을 따르므로, 프록시 뒤에서 `trusted-proxies` 를 빠뜨리면 모든 요청이 프록시 IP 하나로 세어진다.
+- JWT 로그인은 이 제한 대상이 아니다(계정별 5회 잠금으로 별도 방어).
 
 ### 인가 규칙(action_urls) 재적재
 
@@ -129,7 +152,8 @@ java -jar library-backend.jar --server.port=8081   # Hazelcast 포트는 5701 �
 ```
 
 클라이언트는 `message` 가 아니라 `code` 로 분기한다. 401 코드: `UNAUTHORIZED`, `TOKEN_EXPIRED`, `INVALID_TOKEN`,
-`INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `INVALID_REFRESH_TOKEN`, `INVALID_API_KEY` / 403 코드: `ACCESS_DENIED`, `ACCESS_CONDITION_DENIED`.
+`INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `INVALID_REFRESH_TOKEN`, `INVALID_API_KEY` / 403 코드: `ACCESS_DENIED`, `ACCESS_CONDITION_DENIED`
+/ 429 코드: `TOO_MANY_REQUESTS`(API Key 인증 실패 한도 초과, `Retry-After` 헤더 포함).
 
 ## 8. 프론트엔드
 

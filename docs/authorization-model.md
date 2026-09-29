@@ -83,8 +83,10 @@ API Key(api_keys) ──< api_key_actions >┘
 ```
 요청 ─ X-API-KEY 헤더? ─ 아니오 → JWT 필터로
           │ 예
+          ├─ 이 IP 의 이번 분 인증 실패가 한도 도달 → 429 TOO_MANY_REQUESTS (조회하지 않음)
           ├─ 형식(lib_ + 43자 base64url) 불일치 → 401 INVALID_API_KEY
-          ├─ SHA-256 해시로 캐시/DB 조회 → 없음·폐기·만료 → 401 INVALID_API_KEY   (JWT 로 폴백하지 않음)
+          ├─ SHA-256 해시로 캐시/음성 캐시/DB 조회 → 없음·폐기·만료 → 401 INVALID_API_KEY   (JWT 로 폴백하지 않음)
+          │     (위 두 401 은 IP 별 실패 횟수에 더한다. DB 에 없는 해시는 60초간 음성 캐시)
           └─ 인증 성공(ApiKeyPrincipal: 부여 액션·허용 IP)
                  → 접속 조건 필터: api_key_allowed_ips 불일치 → 403 ACCESS_CONDITION_DENIED
                  → UrlAuthorizationManager: api_key_actions 로 같은 규칙 판정
@@ -94,6 +96,7 @@ API Key(api_keys) ──< api_key_actions >┘
   키가 충분히 길고 무작위이므로 BCrypt 같은 느린 해시가 필요 없고, 해시를 곧바로 조회 키(UNIQUE)로 쓸 수 있다.
 - **권한 상승 방지**: 발급자는 자신이 보유한 액션만 키에 부여할 수 있다.
 - 폐기하면 커밋 후 해당 키 캐시가 evict 되어 다음 요청부터 401 이다.
+- 없는 키 반복 조회·무차별 대입 방어(음성 캐시, IP 별 1분 실패 한도 → 429)는 [architecture.md §4](architecture.md#api-key-무차별-대입db-부하-방어) 참고.
 - `last_used_at` 은 노드별로 1분에 한 번만 갱신해 호출마다 UPDATE 가 나가지 않게 했다.
 - 시드: `외부 도서 조회 샘플` 키(`BOOK:READ` — `GET /api/books`, `GET /api/books/{id}`, `GET /api/books/categories`).
 
