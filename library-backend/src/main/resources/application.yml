@@ -5,8 +5,9 @@ spring:
   application:
     name: library-backend
   # 기본 프로필: 설치 없이 구동되는 H2 인메모리 DB (PostgreSQL 호환 모드)
+  # 컨텍스트마다 DB 이름을 달리해 테스트 컨텍스트 간 시드 중복 적재를 막는다
   datasource:
-    url: jdbc:h2:mem:library;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
+    url: jdbc:h2:mem:library-${random.uuid};MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1
     username: sa
     password:
   # 스키마·시드는 schema.sql / data.sql 로 관리한다
@@ -16,7 +17,7 @@ spring:
       encoding: UTF-8
   jpa:
     hibernate:
-      ddl-auto: none
+      ddl-auto: validate
     open-in-view: false
     properties:
       hibernate:
