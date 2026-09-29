@@ -25,6 +25,12 @@ spring:
         jdbc:
           time_zone: Asia/Seoul
 
+# Hibernate 는 제약 위반 시 드라이버 메시지(입력값 포함 — 예: 가입 아이디)를 ERROR 로 남긴다.
+# 이 예외는 전역 처리기가 409 로 번역하거나 입력값 없이 기록하므로 Hibernate 쪽 로그는 끈다(개인정보 노출 방지).
+logging:
+  level:
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: "OFF"
+
 # API 문서(Swagger UI·/v3/api-docs)는 인증 없이 열리므로 기본은 끄고, 기본(H2) 개발 프로필(application-default.yml)에서만 켠다
 springdoc:
   api-docs:

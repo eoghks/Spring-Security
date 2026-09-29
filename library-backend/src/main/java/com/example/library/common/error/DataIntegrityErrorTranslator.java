@@ -31,13 +31,16 @@ public final class DataIntegrityErrorTranslator {
 				.findFirst();
 	}
 
+	/** 로그용 제약 이름(입력값이 담긴 드라이버 메시지 대신 이 값만 남긴다). 추출하지 못하면 빈 값 */
+	public static Optional<String> constraintName(DataIntegrityViolationException e) {
+		return Optional.ofNullable(e.getCause())
+				.filter(ConstraintViolationException.class::isInstance)
+				.map(cause -> ((ConstraintViolationException) cause).getConstraintName());
+	}
+
 	/** Hibernate 가 추출한 제약 이름과 드라이버 원본 메시지를 합친다(DB 마다 이름 추출 형식이 달라서) */
 	private static String violationDetail(DataIntegrityViolationException e) {
-		String constraintName = Optional.ofNullable(e.getCause())
-				.filter(ConstraintViolationException.class::isInstance)
-				.map(cause -> ((ConstraintViolationException) cause).getConstraintName())
-				.orElse("");
 		String message = Optional.ofNullable(e.getMostSpecificCause().getMessage()).orElse("");
-		return constraintName + " " + message;
+		return constraintName(e).orElse("") + " " + message;
 	}
 }

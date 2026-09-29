@@ -69,6 +69,7 @@ public class GlobalExceptionHandler {
 
 	/**
 	 * 동시 요청 경합으로 유니크 제약에 걸린 경우를 409 로 번역한다. 알 수 없는 제약 위반은 그대로 500 이다.
+	 * 드라이버 메시지에는 입력값(아이디·이메일 등)이 들어 있으므로 500 로그에도 메시지·스택 대신 제약 이름만 남긴다.
 	 */
 	@ExceptionHandler(DataIntegrityViolationException.class)
 	public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException e,
@@ -79,7 +80,12 @@ public class GlobalExceptionHandler {
 					return ResponseEntity.status(errorCode.getStatus())
 							.body(ErrorResponse.of(errorCode, request.getRequestURI()));
 				})
-				.orElseGet(() -> handleUnexpected(e, request));
+				.orElseGet(() -> {
+					log.error("처리되지 않은 무결성 제약 위반: {} (제약={})", request.getRequestURI(),
+							DataIntegrityErrorTranslator.constraintName(e).orElse("알 수 없음"));
+					return ResponseEntity.internalServerError()
+							.body(ErrorResponse.of(ErrorCode.INTERNAL_ERROR, request.getRequestURI()));
+				});
 	}
 
 	/** 낙관적 락 충돌(예: 도서 수정 중 대출·반납이 먼저 커밋됨)은 덮어쓰지 않고 409 로 알린다 */
