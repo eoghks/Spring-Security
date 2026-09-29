@@ -14,12 +14,14 @@ import java.time.Clock;
 import java.time.LocalDate;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 대출·반납 처리. 회원 본인 대출과 사서 대행 대출이 같은 규칙을 쓴다.
  */
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional
@@ -84,7 +86,12 @@ public class LoanService {
 		loan.returnBook(today);
 		// 조건부 UPDATE 가 영속성 컨텍스트를 비우므로 응답을 먼저 만든다
 		LoanResponse response = LoanResponse.of(loan, today);
-		bookRepository.incrementAvailable(loan.getBook().getId());
+		Long bookId = loan.getBook().getId();
+		if (bookRepository.incrementAvailable(bookId) == 0) {
+			// 반납은 정상 처리하되(회원이 반납하지 못하면 안 되므로), 재고가 이미 보유 수량이면 늘리지 않고 불일치를 남긴다
+			log.warn("반납 처리했지만 재고가 이미 보유 수량과 같아 늘리지 않음(재고 불일치 의심): loanId={}, bookId={}",
+					loan.getId(), bookId);
+		}
 		return response;
 	}
 }
