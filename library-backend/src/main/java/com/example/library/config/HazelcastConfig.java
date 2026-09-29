@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 /**
  * 권한 캐시용 Hazelcast 멤버 설정. Config 빈만 두면 Spring Boot 가 HazelcastInstance 를 만든다.
  * 멀티캐스트 대신 TCP/IP 멤버 목록으로 합류하므로 단일 노드에서도 그대로 뜬다.
+ * 멤버 인증이 없는 오픈소스 Hazelcast 이므로 지정한 인터페이스(기본 루프백)에만 바인딩한다.
  */
 @Configuration
 public class HazelcastConfig {
@@ -30,6 +31,8 @@ public class HazelcastConfig {
 		config.setProperty("hazelcast.phone.home.enabled", "false");
 		config.setProperty("hazelcast.logging.type", "slf4j");
 		config.setProperty("hazelcast.wait.seconds.before.join", "0");
+		// 모든 인터페이스(0.0.0.0)가 아니라 지정한 인터페이스에만 바인딩한다
+		config.setProperty("hazelcast.socket.bind.any", "false");
 		configureNetwork(config.getNetworkConfig(), properties);
 		for (String mapName : CacheNames.MAPS) {
 			config.addMapConfig(new MapConfig(mapName).setTimeToLiveSeconds(properties.timeToLiveSeconds()));
@@ -40,6 +43,7 @@ public class HazelcastConfig {
 
 	private static void configureNetwork(NetworkConfig network, HazelcastProperties properties) {
 		network.setPort(properties.port()).setPortAutoIncrement(true);
+		network.getInterfaces().setEnabled(true).addInterface(properties.networkInterface());
 		JoinConfig join = network.getJoin();
 		join.getMulticastConfig().setEnabled(false);
 		join.getAutoDetectionConfig().setEnabled(false);

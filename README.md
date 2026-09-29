@@ -68,7 +68,8 @@ docker compose down -v                     # 정리(볼륨까지 삭제)
   빌드가 Docker 에 의존하지 않도록 PostgreSQL 자동 테스트(Testcontainers)는 두지 않았다.
 
 주요 환경 변수: `JWT_SECRET`(Base64·32바이트 이상, 기본 개발 프로필 외 필수), `TRUSTED_PROXIES`(예: `10.0.0.0/8`),
-`HAZELCAST_MEMBERS`(예: `10.0.0.11,10.0.0.12`), `HAZELCAST_PORT`, `HAZELCAST_CLUSTER`,
+`HAZELCAST_MEMBERS`(예: `10.0.0.11,10.0.0.12`), `HAZELCAST_INTERFACE`(기본 `127.0.0.1`, 다중 노드는 사설 대역 예: `10.0.0.*`),
+`HAZELCAST_PORT`, `HAZELCAST_CLUSTER`,
 `API_KEY_NEGATIVE_CACHE_TTL`(기본 `60s`), `API_KEY_MAX_FAILURES_PER_MINUTE`(기본 `20`).
 
 ### 프론트엔드 (포트 5173)

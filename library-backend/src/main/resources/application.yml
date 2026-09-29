@@ -26,11 +26,14 @@ spring:
           time_zone: Asia/Seoul
 
 app:
-  # 권한 캐시용 Hazelcast(embedded). 멀티캐스트는 끄고 TCP/IP 멤버 목록으로 클러스터를 구성한다.
+  # 권한 캐시용 Hazelcast(embedded). 멀티캐스트·자동 탐지는 끄고 TCP/IP 멤버 목록으로 클러스터를 구성한다.
+  # 오픈소스 Hazelcast 는 멤버 인증이 없으므로 반드시 사설망·방화벽 뒤에 둔다(공개 인터페이스 바인딩은 기동 시 거부).
   hazelcast:
     cluster-name: ${HAZELCAST_CLUSTER:library}
     port: ${HAZELCAST_PORT:5701}
     members: ${HAZELCAST_MEMBERS:127.0.0.1}
+    # 바인딩 인터페이스. 기본은 루프백(단일 노드)이고, 다중 노드는 사설 대역 주소(예: 10.0.0.*)로 바꾼다.
+    interface: ${HAZELCAST_INTERFACE:127.0.0.1}
     # 권한 변경 evict 가 누락되더라도 오래된 값이 무기한 남지 않도록 하는 안전장치(초)
     time-to-live-seconds: 600
   # 날짜·시간 판정(대출 기한, 접속 조건)에 쓰는 시간대

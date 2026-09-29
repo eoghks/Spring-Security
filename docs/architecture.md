@@ -118,12 +118,21 @@ JWT 에 역할·권한을 넣으면 관리자가 권한을 회수해도 토큰 �
 대안으로 "로컬 캐시 + 메시지(토픽·Redis Pub/Sub)로 evict 전파"도 있다 — 읽기 성능은 로컬 캐시만큼 좋지만 메시지 유실 시 일관성이
 TTL 에 기대게 된다. 여기서는 설정으로 멤버를 늘리기만 하면 되는 단순함과 즉시 일관성을 우선했다.
 
-설정: 멀티캐스트는 끄고 TCP/IP 멤버 목록(`app.hazelcast.members`, 기본 `127.0.0.1`)으로 합류한다. 단일 노드로 그대로 뜬다.
+설정: 멀티캐스트·자동 탐지는 끄고 TCP/IP 멤버 목록(`app.hazelcast.members`, 기본 `127.0.0.1`)으로 합류한다. 단일 노드로 그대로 뜬다.
+
+> **보안 주의 — 오픈소스 Hazelcast 는 멤버 인증이 없어 반드시 사설망·방화벽 뒤에 둔다.**
+> 클러스터 포트(기본 5701~)에 붙을 수 있으면 권한 캐시(`user-auth`, `api-keys` 등)를 읽고 바꿀 수 있다.
+> 그래서 멤버는 **지정한 인터페이스에만 바인딩**한다(`hazelcast.socket.bind.any=false`, `app.hazelcast.interface`, 기본 `127.0.0.1`).
+> 다중 노드는 `HAZELCAST_INTERFACE`(예: `10.0.0.*`)와 `HAZELCAST_MEMBERS` 를 사설 대역으로 지정하고, 방화벽으로 클러스터 포트를
+> 애플리케이션 노드끼리만 열어 둔다. 루프백·사설 대역(10/8, 172.16/12, 192.168/16)이 아닌 인터페이스를 지정하면 기동에 실패한다.
 
 ```bash
-# 같은 PC 에서 2노드 예시(두 번째 노드는 포트만 다르게)
+# 같은 PC 에서 2노드 예시(두 번째 노드는 포트만 다르게, 루프백 바인딩 그대로)
 java -jar library-backend.jar --server.port=8080
 java -jar library-backend.jar --server.port=8081   # Hazelcast 포트는 5701 → 5702 자동 증가 후 합류
+
+# 서로 다른 서버 2대(사설망) 예시
+HAZELCAST_INTERFACE=10.0.0.* HAZELCAST_MEMBERS=10.0.0.11,10.0.0.12 java -jar library-backend.jar
 ```
 
 > 주의: 기본 H2 는 **인메모리이며 노드마다 별개**다. 2노드 실제 운영 검증은 `postgres` 프로필로 같은 DB 를 바라보게 해야 한다.

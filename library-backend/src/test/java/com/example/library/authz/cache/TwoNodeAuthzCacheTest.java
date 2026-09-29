@@ -38,7 +38,7 @@ class TwoNodeAuthzCacheTest {
 	@BeforeAll
 	static void startCluster() {
 		HazelcastProperties properties = new HazelcastProperties("two-node-test-" + UUID.randomUUID(), 5951,
-				List.of("127.0.0.1"), 600);
+				List.of("127.0.0.1"), 600, "127.0.0.1");
 		nodeA = Hazelcast.newHazelcastInstance(HazelcastConfig.createConfig(properties));
 		nodeB = Hazelcast.newHazelcastInstance(HazelcastConfig.createConfig(properties));
 	}

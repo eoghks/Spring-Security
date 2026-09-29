@@ -36,7 +36,7 @@ class AuthzCacheNegativeCacheTest {
 	@BeforeAll
 	static void startMember() {
 		HazelcastProperties properties = new HazelcastProperties("negative-cache-test-" + UUID.randomUUID(), 5971,
-				List.of("127.0.0.1"), 600);
+				List.of("127.0.0.1"), 600, "127.0.0.1");
 		hazelcast = Hazelcast.newHazelcastInstance(HazelcastConfig.createConfig(properties));
 	}
 
