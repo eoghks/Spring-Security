@@ -95,6 +95,8 @@ API Key(api_keys) ──< api_key_actions >┘
 - 발급: `SecureRandom` 32바이트 → `lib_` + base64url(패딩 없음). 원문은 **발급 응답에서 1회만** 주고 DB 에는 SHA-256 해시와 표시용 앞 8자만 저장한다.
   키가 충분히 길고 무작위이므로 BCrypt 같은 느린 해시가 필요 없고, 해시를 곧바로 조회 키(UNIQUE)로 쓸 수 있다.
 - **권한 상승 방지**: 발급자는 자신이 보유한 액션만 키에 부여할 수 있다.
+- **사용자 전용 API**: "본인" 이 필요한 API(`/api/loans` 대출·내 대출·반납, `/api/me`, API Key 발급, 회원 역할 변경)는 API Key 로 부르면
+  URL 인가를 통과하더라도 **403 `USER_ONLY`** 다(주체가 사용자가 아니므로).
 - 폐기하면 커밋 후 해당 키 캐시가 evict 되어 다음 요청부터 401 이다.
 - 없는 키 반복 조회·무차별 대입 방어(음성 캐시, IP 별 1분 실패 한도 → 429)는 [architecture.md §4](architecture.md#api-key-무차별-대입db-부하-방어) 참고.
 - `last_used_at` 은 노드별로 1분에 한 번만 갱신해 호출마다 UPDATE 가 나가지 않게 했다.

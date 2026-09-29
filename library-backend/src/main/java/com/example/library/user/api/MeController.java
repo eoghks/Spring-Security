@@ -4,6 +4,7 @@ import com.example.library.authz.application.PermissionQueryService;
 import com.example.library.authz.application.PermissionQueryService.MyPermissions;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
+import com.example.library.security.LibraryPrincipal;
 import com.example.library.security.UserPrincipal;
 import com.example.library.user.domain.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,15 +27,15 @@ public class MeController {
 
 	@GetMapping
 	@Transactional(readOnly = true)
-	public MeResponse me(@AuthenticationPrincipal UserPrincipal principal) {
-		return userRepository.findWithRoleById(principal.userId())
+	public MeResponse me(@AuthenticationPrincipal LibraryPrincipal principal) {
+		return userRepository.findWithRoleById(UserPrincipal.require(principal).userId())
 				.map(MeResponse::from)
 				.orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
 	}
 
 	/** 호출 가능한 URL 과 진입 가능한 메뉴 */
 	@GetMapping("/permissions")
-	public MyPermissions permissions(@AuthenticationPrincipal UserPrincipal principal) {
-		return permissionQueryService.permissionsOf(principal);
+	public MyPermissions permissions(@AuthenticationPrincipal LibraryPrincipal principal) {
+		return permissionQueryService.permissionsOf(UserPrincipal.require(principal));
 	}
 }

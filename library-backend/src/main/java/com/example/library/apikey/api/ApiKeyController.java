@@ -1,6 +1,7 @@
 package com.example.library.apikey.api;
 
 import com.example.library.apikey.application.ApiKeyService;
+import com.example.library.security.LibraryPrincipal;
 import com.example.library.security.UserPrincipal;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -30,12 +31,12 @@ public class ApiKeyController {
 		return apiKeyService.list();
 	}
 
-	/** 발급 — 응답의 apiKey 원문은 이번 한 번만 제공된다 */
+	/** 발급 — 응답의 apiKey 원문은 이번 한 번만 제공된다. 발급자는 사용자여야 한다(API Key 로 키 발급 불가) */
 	@PostMapping
 	@ResponseStatus(HttpStatus.CREATED)
-	public IssuedApiKeyResponse issue(@AuthenticationPrincipal UserPrincipal issuer,
+	public IssuedApiKeyResponse issue(@AuthenticationPrincipal LibraryPrincipal issuer,
 			@Valid @RequestBody ApiKeyIssueRequest request) {
-		return apiKeyService.issue(issuer, request);
+		return apiKeyService.issue(UserPrincipal.require(issuer), request);
 	}
 
 	@PostMapping("/{id}/revoke")

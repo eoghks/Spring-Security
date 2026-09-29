@@ -1,6 +1,7 @@
 package com.example.library.user.api;
 
 import com.example.library.common.api.PageResponse;
+import com.example.library.security.LibraryPrincipal;
 import com.example.library.security.UserPrincipal;
 import com.example.library.user.application.UserAdminService;
 import jakarta.validation.Valid;
@@ -34,9 +35,9 @@ public class UserAdminController {
 	}
 
 	@PutMapping("/{id}/role")
-	public UserAdminResponse changeRole(@AuthenticationPrincipal UserPrincipal actor, @PathVariable Long id,
+	public UserAdminResponse changeRole(@AuthenticationPrincipal LibraryPrincipal actor, @PathVariable Long id,
 			@Valid @RequestBody ChangeRoleRequest request) {
-		return userAdminService.changeRole(actor.userId(), id, request.roleId());
+		return userAdminService.changeRole(UserPrincipal.require(actor).userId(), id, request.roleId());
 	}
 
 	@PostMapping("/{id}/unlock")

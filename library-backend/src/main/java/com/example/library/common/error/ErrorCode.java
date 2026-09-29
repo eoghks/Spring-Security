@@ -23,6 +23,7 @@ public enum ErrorCode {
 	// 인가(403)
 	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	ACCESS_CONDITION_DENIED(HttpStatus.FORBIDDEN, "허용된 접속 조건이 아닙니다."),
+	USER_ONLY(HttpStatus.FORBIDDEN, "사용자 로그인으로만 쓸 수 있는 기능입니다(API Key 로는 호출할 수 없음)."),
 
 	// 요청 오류(400)
 	VALIDATION_FAILED(HttpStatus.BAD_REQUEST, "입력값이 올바르지 않습니다."),
