@@ -179,5 +179,9 @@ HAZELCAST_INTERFACE=10.0.0.* HAZELCAST_MEMBERS=10.0.0.11,10.0.0.12 java -jar lib
 
 - axios 인터셉터: 401 이면 Refresh 토큰으로 재발급 후 원 요청을 1회 재시도한다. **동시에 여러 요청이 401 을 받아도 재발급은 한 번만** 한다
   (진행 중인 재발급 Promise 공유). 재발급이 실패하면 토큰을 지우고 로그인 화면으로 보낸다.
+- **탭 간 재발급 직렬화**: 서버는 같은 Refresh 토큰의 두 번째 제시를 재사용으로 보고 전체 폐기하므로, 여러 탭이 동시에 401 을 받으면
+  모두 로그아웃될 수 있다. 그래서 재발급은 Web Locks(`navigator.locks`, 이름 `library.refresh`)로 한 번에 한 탭만 하고,
+  락을 얻은 탭은 다른 탭이 이미 새 토큰을 저장했으면(실패한 요청의 토큰과 저장소 토큰이 다르면) 서버를 부르지 않고 그 토큰을 쓴다.
+  Web Locks 를 지원하지 않는 브라우저에서는 탭 안의 공유만 동작한다.
 - 403 이면 권한이 바뀌었을 수 있으므로 `/api/me/permissions` 를 다시 받고 안내한다.
 - 버튼은 `<Can url="METHOD /pattern">`, 사이드바는 READ 보유 메뉴로 제어한다(자세한 근거는 [authorization-model.md](authorization-model.md)).

@@ -27,20 +27,51 @@ api.interceptors.request.use((config) => {
  */
 let refreshing: Promise<string> | null = null;
 
-function refreshAccessToken(): Promise<string> {
+/** 탭 간 재발급 직렬화에 쓰는 Web Locks 이름 */
+const REFRESH_LOCK = 'library.refresh';
+
+/**
+ * Access 토큰을 재발급한다.
+ * 탭 안에서는 진행 중인 Promise 를 공유하고, 탭 사이에서는 Web Locks 로 한 번에 한 탭만 재발급한다.
+ * 같은 Refresh 토큰을 두 탭이 동시에 내면 서버가 재사용으로 보고 전체 로그아웃하므로, 락을 얻은 뒤
+ * 다른 탭이 이미 새 토큰을 저장했으면(실패한 요청의 토큰과 다르면) 서버를 부르지 않고 그 토큰을 쓴다.
+ */
+function refreshAccessToken(staleAccessToken: string | undefined): Promise<string> {
   if (!refreshing) {
-    const refreshToken = tokenStore.refreshToken();
-    refreshing = (refreshToken
-      ? axios.post<TokenResponse>('/api/auth/refresh', { refreshToken }).then(({ data }) => {
-          tokenStore.save(data);
-          return data.accessToken;
-        })
-      : Promise.reject(new Error('리프레시 토큰 없음'))
-    ).finally(() => {
+    refreshing = withCrossTabLock(() => refreshOnce(staleAccessToken)).finally(() => {
       refreshing = null;
     });
   }
   return refreshing;
+}
+
+async function refreshOnce(staleAccessToken: string | undefined): Promise<string> {
+  const current = tokenStore.accessToken();
+  if (current && current !== staleAccessToken) {
+    return current;
+  }
+  const refreshToken = tokenStore.refreshToken();
+  if (!refreshToken) {
+    throw new Error('리프레시 토큰 없음');
+  }
+  const { data } = await axios.post<TokenResponse>('/api/auth/refresh', { refreshToken });
+  tokenStore.save(data);
+  return data.accessToken;
+}
+
+/** Web Locks 를 지원하면 탭 간 배타 락 안에서 실행하고, 지원하지 않으면 그냥 실행한다 */
+async function withCrossTabLock<T>(task: () => Promise<T>): Promise<T> {
+  if (typeof navigator !== 'undefined' && navigator.locks) {
+    // 락은 task 가 끝날(Promise 가 정리될) 때까지 유지된다
+    return await navigator.locks.request(REFRESH_LOCK, task);
+  }
+  return task();
+}
+
+/** 실패한 요청에 실려 간 Access 토큰(재발급 전 값) */
+function sentAccessToken(config: RetriableConfig): string | undefined {
+  const header = config.headers.Authorization;
+  return typeof header === 'string' && header.startsWith('Bearer ') ? header.slice('Bearer '.length) : undefined;
 }
 
 // 응답: 401 → 재발급 후 1회 재시도, 403 → 권한 재조회 알림
@@ -52,7 +83,7 @@ api.interceptors.response.use(
     if (status === 401 && config && !config._retried && !config.url?.startsWith(AUTH_PATH)) {
       config._retried = true;
       try {
-        const accessToken = await refreshAccessToken();
+        const accessToken = await refreshAccessToken(sentAccessToken(config));
         config.headers.Authorization = `Bearer ${accessToken}`;
         return api(config as AxiosRequestConfig);
       } catch {
