@@ -68,6 +68,6 @@ public class AuthzSnapshotLoader {
 	private ApiKeySnapshot toSnapshot(ApiKey apiKey) {
 		return new ApiKeySnapshot(apiKey.getId(), apiKey.getName(), apiKey.isRevoked(),
 				apiKey.getExpiresAt().orElse(LocalDateTime.MAX), toActionCodes(apiKey.getActionIds()),
-				Set.copyOf(apiKey.getAllowedIps()));
+				Set.copyOf(apiKey.getAllowedIps()), apiKey.getOwnerUserId());
 	}
 }

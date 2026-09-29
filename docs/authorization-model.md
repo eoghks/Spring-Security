@@ -87,15 +87,19 @@ API Key(api_keys) ──< api_key_actions >┘
           ├─ 형식(lib_ + 43자 base64url) 불일치 → 401 INVALID_API_KEY
           ├─ SHA-256 해시로 캐시/음성 캐시/DB 조회 → 없음·폐기·만료 → 401 INVALID_API_KEY   (JWT 로 폴백하지 않음)
           │     (위 두 401 은 IP 별 실패 횟수에 더한다. DB 에 없는 해시는 60초간 음성 캐시)
-          └─ 인증 성공(ApiKeyPrincipal: 부여 액션·허용 IP)
-                 → 접속 조건 필터: api_key_allowed_ips 불일치 → 403 ACCESS_CONDITION_DENIED
-                 → UrlAuthorizationManager: api_key_actions 로 같은 규칙 판정
+          ├─ 발급자가 없거나 잠겼으면 → 401 INVALID_API_KEY
+          └─ 인증 성공(ApiKeyPrincipal: 부여 액션·허용 IP·발급자 ID·발급자 현재 역할)
+                 → 접속 조건 필터: api_key_allowed_ips 불일치 또는 발급자 접속 조건 위반 → 403 ACCESS_CONDITION_DENIED
+                 → UrlAuthorizationManager: (api_key_actions ∩ 발급자 현재 역할 액션)으로 같은 규칙 판정
 ```
 
 - 발급: `SecureRandom` 32바이트 → `lib_` + base64url(패딩 없음). 원문은 **발급 응답에서 1회만** 주고 DB 에는 SHA-256 해시와 표시용 앞 8자만 저장한다.
   키가 충분히 길고 무작위이므로 BCrypt 같은 느린 해시가 필요 없고, 해시를 곧바로 조회 키(UNIQUE)로 쓸 수 있다.
 - **권한 상승 방지**: 발급자는 자신이 보유한 액션만 키에 부여할 수 있다. 역할 권한 저장·역할 변경도 같은 원칙을 따르고,
   자기 역할의 권한과 그 액션의 URL 은 편집할 수 없다([architecture.md §6](architecture.md#6-주요-설계-결정과-트레이드오프)).
+- **발급자에 묶인 권한**: 키의 실효 권한은 `부여 액션 ∩ 발급자의 현재 역할 액션` 이다. 발급자가 강등되면 키 권한도 함께 줄고,
+  발급자가 잠기면 키도 401 이며, 발급자의 접속 조건(IP·기간·요일·시간)도 키 호출에 함께 적용된다.
+  발급자 정보는 사용자·역할 캐시에서 매 요청 읽으므로 발급자 변경이 다음 요청부터 반영된다.
 - **사용자 전용 API**: "본인" 이 필요한 API(`/api/loans` 대출·내 대출·반납, `/api/me`, API Key 발급, 회원 역할 변경)는 API Key 로 부르면
   URL 인가를 통과하더라도 **403 `USER_ONLY`** 다(주체가 사용자가 아니므로).
 - 폐기하면 커밋 후 해당 키 캐시가 evict 되어 다음 요청부터 401 이다.

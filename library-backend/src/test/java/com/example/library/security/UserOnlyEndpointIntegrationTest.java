@@ -54,7 +54,7 @@ class UserOnlyEndpointIntegrationTest extends IntegrationTestSupport {
 		UserPrincipal user = new UserPrincipal(1L, "member", 3L);
 
 		assertThat(UserPrincipal.require(user)).isSameAs(user);
-		assertThatThrownBy(() -> UserPrincipal.require(new ApiKeyPrincipal(1L, "key", Set.of(), Set.of())))
+		assertThatThrownBy(() -> UserPrincipal.require(new ApiKeyPrincipal(1L, "key", Set.of(), Set.of(), 1L, 1L)))
 				.isInstanceOf(BusinessException.class)
 				.hasMessageContaining("API Key");
 	}

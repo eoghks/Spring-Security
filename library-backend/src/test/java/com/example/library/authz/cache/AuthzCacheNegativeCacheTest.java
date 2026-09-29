@@ -70,7 +70,7 @@ class AuthzCacheNegativeCacheTest {
 		AuthzCache cache = cacheWithTtl(Duration.ofSeconds(60));
 		assertThat(cache.findApiKey(keyHash)).isEmpty();
 
-		ApiKeySnapshot issued = new ApiKeySnapshot(1L, "새 키", false, null, Set.of("BOOK:READ"), Set.of());
+		ApiKeySnapshot issued = new ApiKeySnapshot(1L, "새 키", false, null, Set.of("BOOK:READ"), Set.of(), 1L);
 		given(loader.loadApiKey(keyHash)).willReturn(Optional.of(issued));
 		cache.evictApiKey(keyHash);
 

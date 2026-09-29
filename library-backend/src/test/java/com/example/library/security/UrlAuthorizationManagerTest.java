@@ -65,7 +65,7 @@ class UrlAuthorizationManagerTest {
 	@DisplayName("authenticated_urls 는 로그인 사용자면 통과, API Key 는 거부한다")
 	void authenticatedOnly() {
 		given(resolver.grantedActions(any())).willReturn(Set.of());
-		ApiKeyPrincipal apiKey = new ApiKeyPrincipal(1L, "key", Set.of("BOOK:READ"), Set.of());
+		ApiKeyPrincipal apiKey = new ApiKeyPrincipal(1L, "key", Set.of("BOOK:READ"), Set.of(), 1L, 1L);
 
 		assertThat(decide(user(member), "GET", "/api/me")).isTrue();
 		assertThat(decide(user(apiKey), "GET", "/api/me")).isFalse();

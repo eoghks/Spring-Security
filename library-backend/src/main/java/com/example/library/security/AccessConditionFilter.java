@@ -24,7 +24,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * 인증된 요청마다 접속 조건을 검사한다.
- * 사용자는 user_access_conditions(IP·기간·요일·시간), API Key 는 api_key_allowed_ips 로 판정한다.
+ * 사용자는 user_access_conditions(IP·기간·요일·시간), API Key 는 api_key_allowed_ips 와 발급자의 접속 조건을 함께 판정한다.
  * 위반 시 403 ACCESS_CONDITION_DENIED 로 응답하고 구체 사유는 로그에만 남긴다.
  */
 @Slf4j
@@ -55,16 +55,16 @@ public class AccessConditionFilter extends OncePerRequestFilter {
 
 	private Optional<String> findViolation(LibraryPrincipal principal, String clientIp) {
 		return switch (principal) {
-			case UserPrincipal user -> findUserViolation(user, clientIp);
+			case UserPrincipal user -> findUserViolation(user.userId(), clientIp);
 			case ApiKeyPrincipal apiKey -> IpPatterns.matchesAny(List.copyOf(apiKey.allowedIps()), clientIp)
-					? Optional.empty()
+					? findUserViolation(apiKey.ownerUserId(), clientIp).map(reason -> "API Key 발급자 조건: " + reason)
 					: Optional.of("API Key 허용 IP 아님");
 		};
 	}
 
 	/** 스냅샷이 사라졌으면(인증 직후 삭제된 사용자) 통과시키지 않는다 */
-	private Optional<String> findUserViolation(UserPrincipal user, String clientIp) {
-		Optional<AccessConditionSnapshot> condition = authzCache.findUser(user.userId())
+	private Optional<String> findUserViolation(Long userId, String clientIp) {
+		Optional<AccessConditionSnapshot> condition = authzCache.findUser(userId)
 				.map(UserAuthSnapshot::accessCondition);
 		if (condition.isEmpty()) {
 			return Optional.of("사용자 정보 없음");

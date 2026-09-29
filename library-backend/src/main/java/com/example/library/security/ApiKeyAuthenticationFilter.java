@@ -26,7 +26,7 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 /**
  * X-API-KEY 헤더 인증 필터(JWT 필터보다 앞).
- * 키가 제시됐는데 무효(형식 오류·미등록·폐기·만료)면 즉시 401 INVALID_API_KEY — JWT 로 폴백하지 않는다.
+ * 키가 제시됐는데 무효(형식 오류·미등록·폐기·만료, 발급자 없음·잠김)면 즉시 401 INVALID_API_KEY — JWT 로 폴백하지 않는다.
  * 인증 실패는 클라이언트 IP 별로 세고, 1분 허용치를 넘긴 IP 는 그 분이 끝날 때까지 조회 없이 429 로 거절한다.
  * 로그에는 키 원문 대신 앞 8자만 남긴다.
  */
@@ -59,7 +59,7 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 			errorResponseWriter.write(request, response, ErrorCode.TOO_MANY_REQUESTS);
 			return;
 		}
-		Optional<ApiKeySnapshot> apiKey = findUsableKey(rawKey.trim());
+		Optional<ApiKeyPrincipal> apiKey = findUsableKey(rawKey.trim()).flatMap(this::withActiveOwner);
 		if (apiKey.isEmpty()) {
 			failureLimiter.recordFailure(clientIp);
 			log.info("API Key 인증 실패: prefix={}", safePrefix(rawKey));
@@ -80,9 +80,15 @@ public class ApiKeyAuthenticationFilter extends OncePerRequestFilter {
 		return authzCache.findApiKey(apiKeyCodec.hash(rawKey)).filter(snapshot -> snapshot.isUsable(now));
 	}
 
-	private void authenticate(ApiKeySnapshot snapshot) {
-		ApiKeyPrincipal principal = new ApiKeyPrincipal(snapshot.apiKeyId(), snapshot.name(),
-				snapshot.actionCodes(), snapshot.allowedIps());
+	/** 발급자가 존재하고 잠기지 않았을 때만 주체를 만든다. 발급자의 현재 역할을 함께 담아 권한 교집합에 쓴다 */
+	private Optional<ApiKeyPrincipal> withActiveOwner(ApiKeySnapshot snapshot) {
+		return authzCache.findUser(snapshot.ownerUserId())
+				.filter(owner -> !owner.locked())
+				.map(owner -> new ApiKeyPrincipal(snapshot.apiKeyId(), snapshot.name(), snapshot.actionCodes(),
+						snapshot.allowedIps(), owner.userId(), owner.roleId()));
+	}
+
+	private void authenticate(ApiKeyPrincipal principal) {
 		SecurityContextHolder.getContext()
 				.setAuthentication(UsernamePasswordAuthenticationToken.authenticated(principal, null, List.of()));
 	}
