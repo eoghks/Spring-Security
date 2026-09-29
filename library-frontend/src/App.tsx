@@ -6,6 +6,7 @@ import { NoticeProvider } from './components/Notice';
 import { RequireMenu } from './components/RequireMenu';
 import BookDetailPage from './pages/BookDetailPage';
 import BookListPage from './pages/BookListPage';
+import BookManagementPage from './pages/BookManagementPage';
 import LoanManagementPage from './pages/LoanManagementPage';
 import MyLoansPage from './pages/MyLoansPage';
 import LoginPage from './pages/LoginPage';
@@ -31,6 +32,10 @@ export default function App() {
                 <Route
                   path="/loan-management"
                   element={<RequireMenu codes={['LOAN_MANAGE']}><LoanManagementPage /></RequireMenu>}
+                />
+                <Route
+                  path="/book-management"
+                  element={<RequireMenu codes={['BOOK_MANAGE']}><BookManagementPage /></RequireMenu>}
                 />
                 <Route path="*" element={<HomeRedirect />} />
               </Route>
