@@ -1,0 +1,10 @@
+# PostgreSQL 프로필 (--spring.profiles.active=postgres)
+# 최초 1회는 DB_INIT_MODE=always 로 기동해 schema.sql / data.sql 을 적용한다.
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/library}
+    username: ${DB_USERNAME:library}
+    password: ${DB_PASSWORD:library}
+  sql:
+    init:
+      mode: ${DB_INIT_MODE:never}
