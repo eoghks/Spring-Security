@@ -34,6 +34,7 @@ public final class PublicEndpoints {
 		}
 	}
 
+	/** Swagger 항목은 springdoc 이 켜진 기본 개발 프로필에서만 실제로 응답한다(그 밖 프로필은 문서가 꺼져 404) */
 	public static final List<Endpoint> ALL = List.of(
 			Endpoint.of(HttpMethod.POST, "/api/auth/login"),
 			Endpoint.of(HttpMethod.POST, "/api/auth/signup"),

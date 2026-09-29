@@ -43,7 +43,7 @@ cd library-backend
 - JWT 서명 키: 기본(H2) 개발 프로필에서만 저장소에 있는 개발용 키를 쓴다(`application-default.yml`).
   그 밖의 프로필(`postgres` 등)은 환경 변수 `JWT_SECRET`(Base64, 디코드 32바이트 이상)이 **필수**이며,
   없거나 개발용 키와 같거나 짧으면 **기동에 실패**한다. 키 생성 예: `openssl rand -base64 32`
-- Swagger UI: http://localhost:8080/swagger-ui.html
+- Swagger UI: http://localhost:8080/swagger-ui.html — 기본(H2) 개발 프로필에서만 열린다(그 밖 프로필은 API 문서가 꺼져 404).
 - 빌드·테스트: `./gradlew build`
 
 PostgreSQL 로 실행 (Docker 전용 컨테이너 — 로컬에 설치된 5432 PostgreSQL 과 겹치지 않게 호스트 포트 **55432**):

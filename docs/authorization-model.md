@@ -20,7 +20,7 @@ API Key(api_keys) ──< api_key_actions >┘
 
 - **메뉴 진입**은 그 메뉴의 `READ` 액션 보유로 판정한다(사이드바 표시 기준).
 - **authenticated_urls**: 로그인(사용자)만 되어 있으면 되는 URL. 예: `GET /api/me`, `GET /api/me/permissions`. API Key 로는 호출할 수 없다.
-- **permitAll**: 로그인·회원가입·토큰 재발급·로그아웃·Swagger. 테이블이 아니라 `PublicEndpoints` 코드 한 곳에서만 관리한다.
+- **permitAll**: 로그인·회원가입·토큰 재발급·로그아웃·Swagger(Swagger 는 기본 개발 프로필에서만 켜지고 그 밖 프로필에서는 꺼진다). 테이블이 아니라 `PublicEndpoints` 코드 한 곳에서만 관리한다.
   (공개 URL 을 DB 로 두면 관리 화면 실수 한 번으로 보호 API 가 공개될 수 있으므로, 배포(코드 리뷰)를 거쳐야만 바뀌게 했다.)
 
 ## 2. 판정 규칙

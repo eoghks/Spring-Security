@@ -25,6 +25,13 @@ spring:
         jdbc:
           time_zone: Asia/Seoul
 
+# API 문서(Swagger UI·/v3/api-docs)는 인증 없이 열리므로 기본은 끄고, 기본(H2) 개발 프로필(application-default.yml)에서만 켠다
+springdoc:
+  api-docs:
+    enabled: false
+  swagger-ui:
+    enabled: false
+
 app:
   # 권한 캐시용 Hazelcast(embedded). 멀티캐스트·자동 탐지는 끄고 TCP/IP 멤버 목록으로 클러스터를 구성한다.
   # 오픈소스 Hazelcast 는 멤버 인증이 없으므로 반드시 사설망·방화벽 뒤에 둔다(공개 인터페이스 바인딩은 기동 시 거부).
