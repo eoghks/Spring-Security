@@ -7,10 +7,12 @@ import { RequireMenu } from './components/RequireMenu';
 import BookDetailPage from './pages/BookDetailPage';
 import BookListPage from './pages/BookListPage';
 import BookManagementPage from './pages/BookManagementPage';
+import DashboardPage from './pages/DashboardPage';
 import LoanManagementPage from './pages/LoanManagementPage';
 import MyLoansPage from './pages/MyLoansPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
+import UserManagementPage from './pages/UserManagementPage';
 
 export default function App() {
   return (
@@ -37,6 +39,11 @@ export default function App() {
                   path="/book-management"
                   element={<RequireMenu codes={['BOOK_MANAGE']}><BookManagementPage /></RequireMenu>}
                 />
+                <Route
+                  path="/user-management"
+                  element={<RequireMenu codes={['USER_MANAGE']}><UserManagementPage /></RequireMenu>}
+                />
+                <Route path="/dashboard" element={<RequireMenu codes={['DASHBOARD']}><DashboardPage /></RequireMenu>} />
                 <Route path="*" element={<HomeRedirect />} />
               </Route>
             </Routes>

@@ -329,3 +329,23 @@ input[aria-invalid='true'] {
 .form-grid > button {
   grid-column: 1 / -1;
 }
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.stat-value {
+  font-size: 1.8rem;
+  font-weight: 700;
+  margin-top: 0.3rem;
+}
+
+.card.stat.alert {
+  border-color: var(--color-danger);
+}
+
+.card.stat.alert .stat-value {
+  color: var(--color-danger);
+}
