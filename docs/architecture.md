@@ -46,7 +46,7 @@
 | 재사용 탐지 | 이미 폐기된 Refresh 토큰이 오면 탈취로 보고 그 사용자의 토큰을 모두 폐기. 소비는 조건부 UPDATE(`revoked_at is null`)로 원자화해 같은 토큰을 **동시에** 제시해도 하나만 성공하고 나머지는 재사용으로 처리(전체 폐기 + 401) |
 | 로그아웃 | 제시된 Refresh 토큰 폐기(멱등) |
 | 비밀번호 | BCrypt |
-| 잠금 | 연속 5회 실패 시 잠금, 관리자만 해제. 잠기면 기존 Access 토큰도 다음 요청부터 401 `ACCOUNT_LOCKED`. 로그인 응답의 `ACCOUNT_LOCKED` 는 **비밀번호가 맞을 때만** 준다(틀리면 잠금 여부와 무관하게 `INVALID_CREDENTIALS`) |
+| 잠금 | 연속 5회 실패 시 잠금, 관리자만 해제. 잠기면 기존 Access 토큰도 다음 요청부터 401 `ACCOUNT_LOCKED`. 잠기는 순간 그 사용자의 Refresh 토큰도 모두 폐기한다. 로그인 응답의 `ACCOUNT_LOCKED` 는 **비밀번호가 맞을 때만** 준다(틀리면 잠금 여부와 무관하게 `INVALID_CREDENTIALS`) |
 | IP 단위 제한 | 클라이언트 IP 별 1분 로그인 실패 한도(`app.security.login.max-failures-per-minute`, 기본 30) 도달 시 그 분 동안 429 `TOO_MANY_REQUESTS` — 여러 계정에 비밀번호를 뿌리는 시도 억제 |
 | 접속 조건 | 로그인·재발급 시에도 검사. 비밀번호가 맞아도 조건(IP·기간·요일·시간) 밖이면 토큰을 주지 않고 403 `ACCESS_CONDITION_DENIED` |
 

@@ -1,5 +1,6 @@
 package com.example.library.auth.application;
 
+import com.example.library.auth.domain.RefreshTokenRepository;
 import com.example.library.authz.cache.AuthzChangedEvent;
 import com.example.library.config.AppSecurityProperties;
 import com.example.library.user.domain.UserRepository;
@@ -21,18 +22,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class LoginAttemptService {
 
 	private final UserRepository userRepository;
+	private final RefreshTokenRepository refreshTokenRepository;
 	private final AppSecurityProperties securityProperties;
 	private final ApplicationEventPublisher eventPublisher;
 	private final Clock clock;
 
-	/** 실패를 기록하고, 한도에 도달했으면 잠근다. 이미 잠긴 계정도 횟수는 계속 올린다 */
+	/**
+	 * 실패를 기록하고, 한도에 도달했으면 잠근다. 이미 잠긴 계정도 횟수는 계속 올린다.
+	 * 잠그는 순간 살아 있는 Refresh 토큰도 모두 폐기한다(잠금 해제 뒤에도 옛 세션이 되살아나지 않게).
+	 */
 	@Transactional
 	public void recordFailure(Long userId) {
 		userRepository.incrementFailedLoginCount(userId);
 		int maxAttempts = securityProperties.maxLoginAttempts();
+		LocalDateTime now = LocalDateTime.now(clock);
 		// 증가된 DB 값으로 판정하고, 조건부 UPDATE 라 동시에 한도에 닿아도 잠금 처리는 한 요청만 한다
-		if (userRepository.lockIfLimitReached(userId, maxAttempts, LocalDateTime.now(clock)) == 1) {
+		if (userRepository.lockIfLimitReached(userId, maxAttempts, now) == 1) {
 			log.warn("로그인 {}회 실패로 계정 잠금: userId={}", maxAttempts, userId);
+			refreshTokenRepository.revokeAllByUserId(userId, now);
 			eventPublisher.publishEvent(new AuthzChangedEvent.UserChanged(userId));
 		}
 	}

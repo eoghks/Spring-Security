@@ -19,7 +19,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, Long
 	@Query("update RefreshToken t set t.revokedAt = :now where t.id = :id and t.revokedAt is null")
 	int revokeIfActive(@Param("id") Long id, @Param("now") LocalDateTime now);
 
-	/** 사용자의 살아 있는 토큰을 모두 폐기한다(재사용 탐지·잠금 시) */
+	/** 사용자의 살아 있는 토큰을 모두 폐기한다(재사용 탐지 시, 로그인 실패로 잠길 때) */
 	@Modifying
 	@Query("update RefreshToken t set t.revokedAt = :now where t.userId = :userId and t.revokedAt is null")
 	int revokeAllByUserId(@Param("userId") Long userId, @Param("now") LocalDateTime now);
