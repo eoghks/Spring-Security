@@ -30,6 +30,15 @@ class ClientIpResolverTest {
 	}
 
 	@Test
+	@DisplayName("모든 홉이 신뢰 대역이면 위조 가능한 맨 왼쪽 값이 아니라 가장 가까운 프록시가 적은 맨 오른쪽 홉을 쓴다")
+	void allHopsTrustedUsesRightmost() {
+		// 신뢰 대역 안의 클라이언트(10.1.2.3)가 XFF 에 같은 대역의 다른 IP(10.9.9.9)를 넣은 경우
+		MockHttpServletRequest request = request("10.0.0.5", "10.9.9.9, 10.1.2.3");
+
+		assertThat(resolver.resolve(request)).isEqualTo("10.1.2.3");
+	}
+
+	@Test
 	@DisplayName("XFF 에 형식이 틀린 값이 섞이면 remoteAddr 를 쓴다")
 	void malformedHop() {
 		MockHttpServletRequest request = request("10.0.0.5", "not-an-ip");
