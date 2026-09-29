@@ -6,6 +6,7 @@ import com.example.library.access.domain.AccessConditionSnapshot;
 import com.example.library.access.domain.UserAccessCondition;
 import com.example.library.access.domain.UserAccessConditionRepository;
 import com.example.library.authz.cache.AuthzChangedEvent;
+import com.example.library.common.api.LikePatterns;
 import com.example.library.common.api.PageResponse;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
@@ -40,7 +41,7 @@ public class AccessConditionService {
 
 	@Transactional(readOnly = true)
 	public PageResponse<AccessConditionResponse> list(String keyword, int page, int size) {
-		Page<User> users = userRepository.search(keyword.trim(),
+		Page<User> users = userRepository.search(LikePatterns.escape(keyword.trim()),
 				PageRequest.of(Math.max(page, 0), PageResponse.clampSize(size), Sort.by("id")));
 		Map<Long, UserAccessCondition> conditions = accessConditionRepository
 				.findAllById(users.map(User::getId).toList()).stream()

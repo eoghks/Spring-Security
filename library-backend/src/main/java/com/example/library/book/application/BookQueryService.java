@@ -2,6 +2,7 @@ package com.example.library.book.application;
 
 import com.example.library.book.api.BookResponse;
 import com.example.library.book.domain.BookRepository;
+import com.example.library.common.api.LikePatterns;
 import com.example.library.common.api.PageResponse;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
@@ -24,7 +25,8 @@ public class BookQueryService {
 
 	public PageResponse<BookResponse> search(String keyword, String category, int page, int size) {
 		PageRequest pageable = PageRequest.of(Math.max(page, 0), PageResponse.clampSize(size), Sort.by("title"));
-		return PageResponse.of(bookRepository.search(keyword.trim(), category.trim(), pageable), BookResponse::from);
+		return PageResponse.of(bookRepository.search(LikePatterns.escape(keyword.trim()), category.trim(), pageable),
+				BookResponse::from);
 	}
 
 	public BookResponse get(Long id) {

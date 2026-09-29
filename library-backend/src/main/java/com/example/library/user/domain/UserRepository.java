@@ -48,12 +48,12 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("select count(u) from User u where u.role.id = :roleId and u.locked = false and u.id <> :excludedUserId")
 	long countActiveByRoleExcluding(@Param("roleId") Long roleId, @Param("excludedUserId") Long excludedUserId);
 
-	/** 아이디·이름 부분 일치 검색 (빈 문자열이면 전체) */
+	/** 아이디·이름 부분 일치 검색 (빈 문자열이면 전체). keyword 는 LikePatterns.escape 로 이스케이프해 넘긴다 */
 	@EntityGraph(attributePaths = "role")
 	@Query("""
 			select u from User u
-			where lower(u.username) like lower(concat('%', :keyword, '%'))
-			   or lower(u.name) like lower(concat('%', :keyword, '%'))
+			where lower(u.username) like lower(concat('%', :keyword, '%')) escape '\\'
+			   or lower(u.name) like lower(concat('%', :keyword, '%')) escape '\\'
 			""")
 	Page<User> search(@Param("keyword") String keyword, Pageable pageable);
 }

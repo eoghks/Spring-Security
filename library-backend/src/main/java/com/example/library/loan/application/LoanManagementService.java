@@ -1,5 +1,6 @@
 package com.example.library.loan.application;
 
+import com.example.library.common.api.LikePatterns;
 import com.example.library.common.api.PageResponse;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
@@ -36,7 +37,7 @@ public class LoanManagementService {
 		LocalDate today = LocalDate.now(clock);
 		PageRequest pageable = PageRequest.of(Math.max(page, 0), PageResponse.clampSize(size),
 				Sort.by(Sort.Direction.DESC, "id"));
-		return PageResponse.of(loanRepository.search(normalizedStatus, keyword.trim(), pageable),
+		return PageResponse.of(loanRepository.search(normalizedStatus, LikePatterns.escape(keyword.trim()), pageable),
 				loan -> LoanResponse.of(loan, today));
 	}
 

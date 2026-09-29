@@ -33,13 +33,13 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 	@EntityGraph(attributePaths = {"book", "user"})
 	List<Loan> findByUserIdOrderByIdDesc(Long userId);
 
-	/** 대출 관리 검색: 상태(빈 문자열이면 전체) + 아이디·도서 제목 부분 일치 */
+	/** 대출 관리 검색: 상태(빈 문자열이면 전체) + 아이디·도서 제목 부분 일치(keyword 는 LikePatterns.escape 로 이스케이프) */
 	@EntityGraph(attributePaths = {"book", "user"})
 	@Query("""
 			select l from Loan l join l.user u join l.book b
 			where (:status = '' or cast(l.status as string) = :status)
-			  and (lower(u.username) like lower(concat('%', :keyword, '%'))
-			    or lower(b.title) like lower(concat('%', :keyword, '%')))
+			  and (lower(u.username) like lower(concat('%', :keyword, '%')) escape '\\'
+			    or lower(b.title) like lower(concat('%', :keyword, '%')) escape '\\')
 			""")
 	Page<Loan> search(@Param("status") String status, @Param("keyword") String keyword, Pageable pageable);
 

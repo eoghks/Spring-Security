@@ -4,6 +4,7 @@ import com.example.library.authz.application.GrantGuard;
 import com.example.library.authz.cache.AuthzChangedEvent;
 import com.example.library.authz.domain.Role;
 import com.example.library.authz.domain.RoleRepository;
+import com.example.library.common.api.LikePatterns;
 import com.example.library.common.api.PageResponse;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
@@ -36,7 +37,7 @@ public class UserAdminService {
 	@Transactional(readOnly = true)
 	public PageResponse<UserAdminResponse> search(String keyword, int page, int size) {
 		PageRequest pageable = PageRequest.of(Math.max(page, 0), PageResponse.clampSize(size), Sort.by("id"));
-		return PageResponse.of(userRepository.search(keyword.trim(), pageable), UserAdminResponse::from);
+		return PageResponse.of(userRepository.search(LikePatterns.escape(keyword.trim()), pageable), UserAdminResponse::from);
 	}
 
 	/**

@@ -10,12 +10,12 @@ import org.springframework.data.repository.query.Param;
 
 public interface BookRepository extends JpaRepository<Book, Long> {
 
-	/** 제목·저자·ISBN 부분 일치 + 분류 일치 검색(빈 문자열이면 조건 없음) */
+	/** 제목·저자·ISBN 부분 일치 + 분류 일치 검색(빈 문자열이면 조건 없음). keyword 는 LikePatterns.escape 로 이스케이프해 넘긴다 */
 	@Query("""
 			select b from Book b
-			where (lower(b.title) like lower(concat('%', :keyword, '%'))
-			    or lower(b.author) like lower(concat('%', :keyword, '%'))
-			    or b.isbn like concat('%', :keyword, '%'))
+			where (lower(b.title) like lower(concat('%', :keyword, '%')) escape '\\'
+			    or lower(b.author) like lower(concat('%', :keyword, '%')) escape '\\'
+			    or b.isbn like concat('%', :keyword, '%') escape '\\')
 			  and (:category = '' or b.category = :category)
 			""")
 	Page<Book> search(@Param("keyword") String keyword, @Param("category") String category, Pageable pageable);
