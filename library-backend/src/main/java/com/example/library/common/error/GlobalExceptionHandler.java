@@ -48,10 +48,14 @@ public class GlobalExceptionHandler {
 
 	/**
 	 * 스프링 MVC 표준 예외(404·405·필수 파라미터 누락 등)는 상태 코드에 맞춰 변환한다.
+	 * 상태 코드가 없는 서블릿 예외는 500 이 되므로, 원인을 추적할 수 있게 스택과 함께 기록한다.
 	 */
 	@ExceptionHandler({ServletException.class, ErrorResponseException.class})
 	public ResponseEntity<ErrorResponse> handleSpringMvc(Exception e, HttpServletRequest request) {
 		ErrorCode errorCode = toErrorCode(e);
+		if (errorCode == ErrorCode.INTERNAL_ERROR) {
+			log.error("처리되지 않은 서블릿 예외: {}", request.getRequestURI(), e);
+		}
 		return ResponseEntity.status(errorCode.getStatus()).body(ErrorResponse.of(errorCode, request.getRequestURI()));
 	}
 
