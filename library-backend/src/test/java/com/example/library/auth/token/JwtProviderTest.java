@@ -13,7 +13,7 @@ class JwtProviderTest {
 
 	private static final String SECRET = "dGVzdC1vbmx5LWp3dC1zZWNyZXQta2V5LWZvci11bml0LXRlc3RzLTEyMzQ1Njc4";
 	private static final JwtProperties PROPERTIES =
-			new JwtProperties(SECRET, "test-issuer", Duration.ofMinutes(15), Duration.ofDays(7));
+			new JwtProperties(SECRET, "test-issuer", Duration.ofMinutes(15), Duration.ofDays(7), false);
 	private static final Instant NOW = Instant.parse("2026-01-05T00:00:00Z");
 
 	@Test
@@ -40,7 +40,7 @@ class JwtProviderTest {
 	void invalid() {
 		JwtProperties other = new JwtProperties(
 				"b3RoZXItdGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItdW5pdC10ZXN0cy0xMjM0NTY3OA==", "test-issuer",
-				Duration.ofMinutes(15), Duration.ofDays(7));
+				Duration.ofMinutes(15), Duration.ofDays(7), false);
 		String foreign = new JwtProvider(other, Clock.fixed(NOW, ZoneOffset.UTC)).createAccessToken(1L);
 		JwtProvider provider = new JwtProvider(PROPERTIES, Clock.fixed(NOW, ZoneOffset.UTC));
 

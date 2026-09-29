@@ -40,6 +40,9 @@ cd library-backend
 ```
 
 - 기본 프로필은 H2 인메모리라 설치 없이 뜨며, 기동할 때마다 시드가 다시 적재된다.
+- JWT 서명 키: 기본(H2) 개발 프로필에서만 저장소에 있는 개발용 키를 쓴다(`application-default.yml`).
+  그 밖의 프로필(`postgres` 등)은 환경 변수 `JWT_SECRET`(Base64, 디코드 32바이트 이상)이 **필수**이며,
+  없거나 개발용 키와 같거나 짧으면 **기동에 실패**한다. 키 생성 예: `openssl rand -base64 32`
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - 빌드·테스트: `./gradlew build`
 
@@ -48,6 +51,8 @@ PostgreSQL 로 실행 (Docker 전용 컨테이너 — 로컬에 설치된 5432 P
 ```bash
 cd library-backend
 docker compose up -d                       # postgres:16, db/user/password = library (개발용)
+
+export JWT_SECRET="$(openssl rand -base64 32)"   # postgres 프로필은 JWT_SECRET 필수(없으면 기동 실패)
 
 # 최초 1회는 스키마·시드 적용
 DB_INIT_MODE=always ./gradlew bootRun --args='--spring.profiles.active=postgres'
@@ -62,7 +67,7 @@ docker compose down -v                     # 정리(볼륨까지 삭제)
   로그인·도서 검색/상세·대출/반납·권한 403·API Key 조회·없는 키 429·동시 가입 409·접속 조건 밖 로그인 403, 재기동 후 데이터 유지.
   빌드가 Docker 에 의존하지 않도록 PostgreSQL 자동 테스트(Testcontainers)는 두지 않았다.
 
-주요 환경 변수: `JWT_SECRET`(Base64, 운영 필수 교체), `TRUSTED_PROXIES`(예: `10.0.0.0/8`),
+주요 환경 변수: `JWT_SECRET`(Base64·32바이트 이상, 기본 개발 프로필 외 필수), `TRUSTED_PROXIES`(예: `10.0.0.0/8`),
 `HAZELCAST_MEMBERS`(예: `10.0.0.11,10.0.0.12`), `HAZELCAST_PORT`, `HAZELCAST_CLUSTER`,
 `API_KEY_NEGATIVE_CACHE_TTL`(기본 `60s`), `API_KEY_MAX_FAILURES_PER_MINUTE`(기본 `20`).
 
@@ -89,7 +94,7 @@ npm run build                # <Can url> 시드 대조 → 타입체크 → 번�
 curl -H "X-API-KEY: lib_Elsu1z3_KkwNJYk7v7R7BxLaFBJpJV4qc61GHDjZvNY" "http://localhost:8080/api/books?keyword=클린"
 ```
 
-> 위 비밀번호·키·JWT 기본 키는 **개발용**이다. 운영에서는 반드시 교체한다.
+> 위 비밀번호·키는 **개발용**이다. 운영에서는 반드시 교체한다. 개발용 JWT 키는 기본(H2) 개발 프로필에서만 허용된다.
 
 ## 스크린샷
 

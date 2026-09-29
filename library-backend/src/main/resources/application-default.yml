@@ -1,0 +1,7 @@
+# 기본(H2) 개발 프로필 전용 설정 — --spring.profiles.active 를 지정하지 않았을 때만 적용된다.
+# 다른 프로필(postgres 등)로 기동하면 이 파일은 읽히지 않으므로 개발용 JWT 키도 쓰이지 않는다.
+app:
+  jwt:
+    # 공개 저장소에 있는 개발 전용 키. JWT_SECRET 을 주면 그 값이 우선한다.
+    secret: ${JWT_SECRET:bGlicmFyeS1kZXYtb25seS1qd3Qtc2VjcmV0LWtleS1jaGFuZ2UtbWUtaW4tcHJvZA==}
+    dev-secret-allowed: true
