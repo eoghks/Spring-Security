@@ -2,9 +2,12 @@ package com.example.library.authz.api;
 
 import com.example.library.authz.application.AuthzAdminService;
 import com.example.library.authz.domain.RoleRepository;
+import com.example.library.security.LibraryPrincipal;
+import com.example.library.security.UserPrincipal;
 import jakarta.validation.Valid;
 import java.util.List;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -38,7 +41,8 @@ public class RoleAdminController {
 
 	/** 역할 부여 액션 전체 교체 — 커밋 후 해당 역할 캐시만 evict 되어 즉시 반영된다 */
 	@PutMapping("/{id}/actions")
-	public RoleActionsResponse replaceRoleActions(@PathVariable Long id, @Valid @RequestBody RoleActionsRequest request) {
-		return authzAdminService.replaceRoleActions(id, request.actionIds());
+	public RoleActionsResponse replaceRoleActions(@AuthenticationPrincipal LibraryPrincipal actor, @PathVariable Long id,
+			@Valid @RequestBody RoleActionsRequest request) {
+		return authzAdminService.replaceRoleActions(UserPrincipal.require(actor), id, request.actionIds());
 	}
 }

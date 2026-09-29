@@ -44,6 +44,10 @@ public interface UserRepository extends JpaRepository<User, Long> {
 	@Query("update User u set u.failedLoginCount = 0 where u.id = :id and u.failedLoginCount > 0")
 	int resetFailedLoginCount(@Param("id") Long id);
 
+	/** 해당 역할의 잠기지 않은 사용자 수(대상 사용자 제외) — 마지막 관리자 판정용 */
+	@Query("select count(u) from User u where u.role.id = :roleId and u.locked = false and u.id <> :excludedUserId")
+	long countActiveByRoleExcluding(@Param("roleId") Long roleId, @Param("excludedUserId") Long excludedUserId);
+
 	/** 아이디·이름 부분 일치 검색 (빈 문자열이면 전체) */
 	@EntityGraph(attributePaths = "role")
 	@Query("""

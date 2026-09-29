@@ -17,6 +17,7 @@ import com.example.library.authz.domain.RoleRepository;
 import com.example.library.authz.rule.AuthorizationRuleBroadcaster.AuthorizationRulesChangedEvent;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
+import com.example.library.security.UserPrincipal;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 /**
  * 역할·권한 관리. 역할 액션 변경은 역할 캐시 evict, URL 매핑 변경은 규칙 재적재(클러스터 전파)로 이어진다.
+ * 권한 상승을 막기 위해 자기 역할은 편집할 수 없고, 새로 부여하는 액션은 행위자가 보유한 액션 이내여야 한다(GrantGuard).
  */
 @Slf4j
 @Service
@@ -41,6 +43,7 @@ public class AuthzAdminService {
 	private final MenuActionRepository menuActionRepository;
 	private final ActionUrlRepository actionUrlRepository;
 	private final RoleRepository roleRepository;
+	private final GrantGuard grantGuard;
 	private final ApplicationEventPublisher eventPublisher;
 
 	@Transactional(readOnly = true)
@@ -63,25 +66,35 @@ public class AuthzAdminService {
 		return new RoleActionsResponse(roleId, role.getActionIds().stream().sorted().toList());
 	}
 
-	/** 역할 액션 전체 교체. 관리자(시스템) 역할은 잠금 방지를 위해 편집할 수 없다 */
-	public RoleActionsResponse replaceRoleActions(Long roleId, List<Long> actionIds) {
+	/**
+	 * 역할 액션 전체 교체. 관리자(시스템) 역할은 잠금 방지를 위해 편집할 수 없다.
+	 * 자기 역할은 편집할 수 없고, 새로 추가하는 액션은 행위자가 보유한 것이어야 한다(회수는 제한하지 않음).
+	 */
+	public RoleActionsResponse replaceRoleActions(UserPrincipal actor, Long roleId, List<Long> actionIds) {
 		Role role = findRole(roleId);
 		if (role.isSystemAdmin()) {
 			throw new BusinessException(ErrorCode.SYSTEM_ROLE_PROTECTED);
 		}
+		Role actorRole = grantGuard.actorRole(actor);
+		grantGuard.ensureNotOwnRole(actorRole, roleId);
 		Set<Long> requested = new HashSet<>(actionIds);
 		if (menuActionRepository.findAllById(requested).size() != requested.size()) {
 			throw new BusinessException(ErrorCode.INVALID_ACTION);
 		}
+		Set<Long> added = new HashSet<>(requested);
+		added.removeAll(role.getActionIds());
+		grantGuard.ensureOwned(actorRole, added);
 		role.replaceActions(requested);
 		eventPublisher.publishEvent(new AuthzChangedEvent.RoleChanged(roleId));
 		log.info("역할 권한 변경: roleId={}, 액션 {}개", roleId, requested.size());
 		return new RoleActionsResponse(roleId, requested.stream().sorted().toList());
 	}
 
-	public UrlNode addActionUrl(Long actionId, ActionUrlRequest request) {
+	/** 액션에 URL 추가. 자기 역할이 보유한 액션에는 URL 을 붙일 수 없다(자기 권한 확장 방지) */
+	public UrlNode addActionUrl(UserPrincipal actor, Long actionId, ActionUrlRequest request) {
 		MenuAction action = menuActionRepository.findById(actionId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ACTION_NOT_FOUND));
+		grantGuard.ensureNotOwnAction(grantGuard.actorRole(actor), actionId);
 		if (actionUrlRepository.existsByActionIdAndHttpMethodAndUrlPattern(actionId, request.httpMethod(),
 				request.urlPattern())) {
 			throw new BusinessException(ErrorCode.DUPLICATE_ACTION_URL);
@@ -93,9 +106,11 @@ public class AuthzAdminService {
 		return new UrlNode(saved.getId(), saved.getHttpMethod(), saved.getUrlPattern());
 	}
 
-	public void deleteActionUrl(Long actionUrlId) {
+	/** 액션 URL 삭제. 추가와 같은 이유로 자기 역할이 보유한 액션의 URL 은 지울 수 없다 */
+	public void deleteActionUrl(UserPrincipal actor, Long actionUrlId) {
 		ActionUrl url = actionUrlRepository.findById(actionUrlId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.ACTION_URL_NOT_FOUND));
+		grantGuard.ensureNotOwnAction(grantGuard.actorRole(actor), url.getAction().getId());
 		actionUrlRepository.delete(url);
 		eventPublisher.publishEvent(new AuthorizationRulesChangedEvent());
 		log.info("액션 URL 삭제: id={}, {} {}", actionUrlId, url.getHttpMethod(), url.getUrlPattern());

@@ -37,7 +37,7 @@ public class UserAdminController {
 	@PutMapping("/{id}/role")
 	public UserAdminResponse changeRole(@AuthenticationPrincipal LibraryPrincipal actor, @PathVariable Long id,
 			@Valid @RequestBody ChangeRoleRequest request) {
-		return userAdminService.changeRole(UserPrincipal.require(actor).userId(), id, request.roleId());
+		return userAdminService.changeRole(UserPrincipal.require(actor), id, request.roleId());
 	}
 
 	@PostMapping("/{id}/unlock")

@@ -23,6 +23,8 @@ public enum ErrorCode {
 	// 인가(403)
 	ACCESS_DENIED(HttpStatus.FORBIDDEN, "접근 권한이 없습니다."),
 	ACCESS_CONDITION_DENIED(HttpStatus.FORBIDDEN, "허용된 접속 조건이 아닙니다."),
+	CANNOT_EDIT_OWN_ROLE(HttpStatus.FORBIDDEN, "자기 역할의 권한이나 그 액션의 URL 은 바꿀 수 없습니다."),
+	ACTION_NOT_OWNED(HttpStatus.FORBIDDEN, "자신이 보유하지 않은 권한은 부여할 수 없습니다."),
 	USER_ONLY(HttpStatus.FORBIDDEN, "사용자 로그인으로만 쓸 수 있는 기능입니다(API Key 로는 호출할 수 없음)."),
 
 	// 요청 오류(400)
@@ -58,6 +60,7 @@ public enum ErrorCode {
 	BOOK_HAS_ACTIVE_LOANS(HttpStatus.CONFLICT, "대출 중인 도서는 삭제할 수 없습니다."),
 	BOOK_HAS_LOAN_HISTORY(HttpStatus.CONFLICT, "대출 이력이 있는 도서는 삭제할 수 없습니다. 보유 수량을 0 으로 조정하세요."),
 	API_KEY_ALREADY_REVOKED(HttpStatus.CONFLICT, "이미 폐기된 API Key 입니다."),
+	LAST_ADMIN_PROTECTED(HttpStatus.CONFLICT, "마지막 관리자 계정의 역할은 바꿀 수 없습니다."),
 	CONCURRENT_MODIFICATION(HttpStatus.CONFLICT, "다른 요청이 먼저 변경했습니다. 새로 조회한 뒤 다시 시도하세요."),
 
 	// 요청 과다(429)
