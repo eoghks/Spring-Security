@@ -4,6 +4,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -63,6 +64,21 @@ public class GlobalExceptionHandler {
 			case 500 -> ErrorCode.INTERNAL_ERROR;
 			default -> ErrorCode.VALIDATION_FAILED;
 		};
+	}
+
+	/**
+	 * 동시 요청 경합으로 유니크 제약에 걸린 경우를 409 로 번역한다. 알 수 없는 제약 위반은 그대로 500 이다.
+	 */
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	public ResponseEntity<ErrorResponse> handleDataIntegrity(DataIntegrityViolationException e,
+			HttpServletRequest request) {
+		return DataIntegrityErrorTranslator.translate(e)
+				.map(errorCode -> {
+					log.info("유니크 제약 위반을 {} 로 응답: {}", errorCode, request.getRequestURI());
+					return ResponseEntity.status(errorCode.getStatus())
+							.body(ErrorResponse.of(errorCode, request.getRequestURI()));
+				})
+				.orElseGet(() -> handleUnexpected(e, request));
 	}
 
 	@ExceptionHandler(Exception.class)
