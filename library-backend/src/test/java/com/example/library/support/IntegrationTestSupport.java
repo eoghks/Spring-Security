@@ -1,7 +1,15 @@
 package com.example.library.support;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+import com.example.library.auth.api.TokenResponse;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
 
 /**
  * 통합 테스트 공통 설정.
@@ -14,4 +22,41 @@ import org.springframework.boot.test.context.SpringBootTest;
 })
 @AutoConfigureMockMvc
 public abstract class IntegrationTestSupport {
+
+	/** 시드 계정 비밀번호(개발용) */
+	protected static final String ADMIN_PASSWORD = "Admin123!";
+	protected static final String LIBRARIAN_PASSWORD = "Librarian123!";
+	protected static final String MEMBER_PASSWORD = "Member123!";
+
+	@Autowired
+	protected MockMvc mockMvc;
+
+	@Autowired
+	protected ObjectMapper objectMapper;
+
+	/** 로그인해 토큰을 받는다 */
+	protected TokenResponse login(String username, String password) throws Exception {
+		String body = objectMapper.writeValueAsString(new LoginBody(username, password));
+		String response = mockMvc.perform(post("/api/auth/login").contentType(MediaType.APPLICATION_JSON).content(body))
+				.andExpect(status().isOk())
+				.andReturn().getResponse().getContentAsString();
+		return objectMapper.readValue(response, TokenResponse.class);
+	}
+
+	/** 로그인 후 "Bearer ..." 헤더 값을 돌려준다 */
+	protected String bearer(String username, String password) throws Exception {
+		return "Bearer " + login(username, password).accessToken();
+	}
+
+	/** 새 일반 회원을 가입시킨다 */
+	protected void signup(String username, String password) throws Exception {
+		String body = """
+				{"username":"%s","password":"%s","name":"테스트","email":"%s@library.local"}
+				""".formatted(username, password, username);
+		mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON).content(body))
+				.andExpect(status().isCreated());
+	}
+
+	private record LoginBody(String username, String password) {
+	}
 }

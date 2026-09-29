@@ -35,6 +35,11 @@ app:
     time-to-live-seconds: 600
   # 날짜·시간 판정(대출 기한, 접속 조건)에 쓰는 시간대
   zone-id: Asia/Seoul
+  security:
+    # 연속 로그인 실패 허용 횟수(도달 시 잠금, 관리자가 해제)
+    max-login-attempts: 5
+    # X-Forwarded-For 를 신뢰할 프록시 IP·CIDR (비어 있으면 항상 remoteAddr 사용)
+    trusted-proxies: ${TRUSTED_PROXIES:}
   jwt:
     # 개발용 기본 키(Base64, 256bit 이상). 운영에서는 반드시 환경 변수 JWT_SECRET 으로 교체한다.
     secret: ${JWT_SECRET:bGlicmFyeS1kZXYtb25seS1qd3Qtc2VjcmV0LWtleS1jaGFuZ2UtbWUtaW4tcHJvZA==}

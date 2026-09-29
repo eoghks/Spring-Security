@@ -1,5 +1,6 @@
 package com.example.library.auth.api;
 
+import com.example.library.auth.application.AuthService;
 import com.example.library.auth.application.SignupService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -19,10 +20,28 @@ import org.springframework.web.bind.annotation.RestController;
 public class AuthController {
 
 	private final SignupService signupService;
+	private final AuthService authService;
 
 	@PostMapping("/signup")
 	@ResponseStatus(HttpStatus.CREATED)
 	public SignupResponse signup(@Valid @RequestBody SignupRequest request) {
 		return signupService.signup(request);
+	}
+
+	@PostMapping("/login")
+	public TokenResponse login(@Valid @RequestBody LoginRequest request) {
+		return authService.login(request);
+	}
+
+	/** Refresh 토큰 회전 재발급 */
+	@PostMapping("/refresh")
+	public TokenResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
+		return authService.refresh(request.refreshToken());
+	}
+
+	@PostMapping("/logout")
+	@ResponseStatus(HttpStatus.NO_CONTENT)
+	public void logout(@Valid @RequestBody RefreshTokenRequest request) {
+		authService.logout(request.refreshToken());
 	}
 }
