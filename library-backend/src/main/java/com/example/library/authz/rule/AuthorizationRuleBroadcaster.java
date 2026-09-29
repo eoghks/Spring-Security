@@ -28,8 +28,9 @@ public class AuthorizationRuleBroadcaster {
 
 	private ITopic<String> topic;
 
+	/** 기동 시 토픽을 구독한다 */
 	@PostConstruct
-	void subscribe() {
+	public void subscribe() {
 		topic = hazelcast.getTopic(CacheNames.AUTHZ_RELOAD_TOPIC);
 		topic.addMessageListener(this::onMessage);
 	}
