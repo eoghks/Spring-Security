@@ -8,6 +8,12 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.example.library.support.IntegrationTestSupport;
 import com.example.library.user.domain.User;
 import com.example.library.user.domain.UserRepository;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.stream.IntStream;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,5 +65,44 @@ class SignupIntegrationTest extends IntegrationTestSupport {
 						"""))
 				.andExpect(status().isConflict())
 				.andExpect(jsonPath("$.code").value("DUPLICATE_USERNAME"));
+	}
+
+	@Test
+	@DisplayName("같은 아이디로 동시에 가입하면 하나만 201, 나머지는 409 DUPLICATE_USERNAME — 500 은 없다")
+	void concurrentSignupSameUsername() throws Exception {
+		for (int round = 0; round < 5; round++) {
+			String username = "racer0" + round;
+			List<Integer> statuses = signupConcurrently(username, 2);
+
+			assertThat(statuses).containsExactlyInAnyOrder(201, 409);
+			assertThat(userRepository.findByUsername(username)).isPresent();
+		}
+	}
+
+	/** 준비 신호에 맞춰 여러 스레드가 같은 아이디로 동시에 가입 요청을 보낸다 */
+	private List<Integer> signupConcurrently(String username, int threads) throws Exception {
+		String body = """
+				{"username":"%s","password":"Passw0rd!","name":"경합","email":"%s@library.local"}
+				""".formatted(username, username);
+		CountDownLatch start = new CountDownLatch(1);
+		ExecutorService executor = Executors.newFixedThreadPool(threads);
+		List<CompletableFuture<Integer>> futures = IntStream.range(0, threads)
+				.mapToObj(i -> CompletableFuture.supplyAsync(() -> postSignup(body, start), executor))
+				.toList();
+		start.countDown();
+		List<Integer> statuses = futures.stream().map(CompletableFuture::join).toList();
+		executor.shutdown();
+		return statuses;
+	}
+
+	private int postSignup(String body, CountDownLatch start) {
+		try {
+			start.await();
+			return mockMvc.perform(post("/api/auth/signup").contentType(MediaType.APPLICATION_JSON).content(body))
+					.andReturn().getResponse().getStatus();
+		} catch (Exception e) {
+			// 테스트 스레드 안의 검사 예외를 호출 스레드로 넘긴다(흐름 제어 목적 아님)
+			throw new IllegalStateException(e);
+		}
 	}
 }
