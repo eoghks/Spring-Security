@@ -1,5 +1,6 @@
 package com.example.library.apikey.api;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -53,6 +54,21 @@ class ApiKeyManagementIntegrationTest extends IntegrationTestSupport {
 					return request;
 				}))
 				.andExpect(status().isOk());
+	}
+
+	@Test
+	@DisplayName("허용 IP 의 앞뒤 공백은 저장 전에 다듬어져, 그 IP 에서 정상 호출된다(500 이 아니다)")
+	void allowedIpsAreTrimmed() throws Exception {
+		JsonNode issued = issue(bearer("admin", ADMIN_PASSWORD), "[\" 10.9.8.7 \"]");
+		long id = issued.get("detail").get("id").asLong();
+
+		mockMvc.perform(get("/api/books").header("X-API-KEY", issued.get("apiKey").asText()).with(request -> {
+					request.setRemoteAddr("10.9.8.7");
+					return request;
+				}))
+				.andExpect(status().isOk());
+		assertThat(jdbcTemplate.queryForList("SELECT ip FROM api_key_allowed_ips WHERE api_key_id = ?", String.class, id))
+				.containsExactly("10.9.8.7");
 	}
 
 	@Test

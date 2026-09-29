@@ -39,6 +39,14 @@ class IpPatternsTest {
 	}
 
 	@Test
+	@DisplayName("패턴 앞뒤 공백은 무시하고 매칭한다(예외 없이)")
+	void matchingIgnoresSurroundingSpaces() {
+		assertThat(IpPatterns.matchesAny(List.of(" 10.0.0.0/8 "), "10.9.8.7")).isTrue();
+		assertThat(IpPatterns.matchesAny(List.of(" 10.0.0.1"), "10.0.0.1")).isTrue();
+		assertThat(IpPatterns.matchesAny(List.of(" 10.0.0.1"), "10.0.0.2")).isFalse();
+	}
+
+	@Test
 	@DisplayName("로그용 마스킹")
 	void mask() {
 		assertThat(IpPatterns.mask("192.168.10.77")).isEqualTo("192.168.10.*");
