@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { AuthProvider } from './auth/AuthContext';
 import { PermissionProvider } from './auth/PermissionContext';
@@ -11,11 +12,41 @@ import BookListPage from './pages/BookListPage';
 import BookManagementPage from './pages/BookManagementPage';
 import DashboardPage from './pages/DashboardPage';
 import LoanManagementPage from './pages/LoanManagementPage';
-import MyLoansPage from './pages/MyLoansPage';
 import LoginPage from './pages/LoginPage';
+import MyLoansPage from './pages/MyLoansPage';
 import RoleManagementPage from './pages/RoleManagementPage';
 import SignupPage from './pages/SignupPage';
 import UserManagementPage from './pages/UserManagementPage';
+
+/** 메뉴 권한이 필요한 화면 목록 (경로, 필요한 메뉴 코드 중 하나, 화면) */
+const GUARDED: { path: string; menus: string[]; element: ReactNode }[] = [
+  { path: '/dashboard', menus: ['DASHBOARD'], element: <DashboardPage /> },
+  { path: '/books', menus: ['BOOK'], element: <BookListPage /> },
+  { path: '/books/:id', menus: ['BOOK', 'BOOK_MANAGE'], element: <BookDetailPage /> },
+  { path: '/my-loans', menus: ['MY_LOAN'], element: <MyLoansPage /> },
+  { path: '/loan-management', menus: ['LOAN_MANAGE'], element: <LoanManagementPage /> },
+  { path: '/book-management', menus: ['BOOK_MANAGE'], element: <BookManagementPage /> },
+  { path: '/user-management', menus: ['USER_MANAGE'], element: <UserManagementPage /> },
+  { path: '/role-management', menus: ['ROLE_MANAGE'], element: <RoleManagementPage /> },
+  { path: '/access-conditions', menus: ['ACCESS_CONDITION'], element: <AccessConditionPage /> },
+  { path: '/api-keys', menus: ['API_KEY'], element: <ApiKeyPage /> },
+];
+
+function AppRoutes() {
+  return (
+    <Routes>
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+      <Route element={<Layout />}>
+        <Route index element={<HomeRedirect />} />
+        {GUARDED.map(({ path, menus, element }) => (
+          <Route key={path} path={path} element={<RequireMenu codes={menus}>{element}</RequireMenu>} />
+        ))}
+        <Route path="*" element={<HomeRedirect />} />
+      </Route>
+    </Routes>
+  );
+}
 
 export default function App() {
   return (
@@ -23,42 +54,7 @@ export default function App() {
       <NoticeProvider>
         <AuthProvider>
           <PermissionProvider>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/signup" element={<SignupPage />} />
-              <Route element={<Layout />}>
-                <Route index element={<HomeRedirect />} />
-                <Route path="/books" element={<RequireMenu codes={['BOOK']}><BookListPage /></RequireMenu>} />
-                <Route
-                  path="/books/:id"
-                  element={<RequireMenu codes={['BOOK', 'BOOK_MANAGE']}><BookDetailPage /></RequireMenu>}
-                />
-                <Route path="/my-loans" element={<RequireMenu codes={['MY_LOAN']}><MyLoansPage /></RequireMenu>} />
-                <Route
-                  path="/loan-management"
-                  element={<RequireMenu codes={['LOAN_MANAGE']}><LoanManagementPage /></RequireMenu>}
-                />
-                <Route
-                  path="/book-management"
-                  element={<RequireMenu codes={['BOOK_MANAGE']}><BookManagementPage /></RequireMenu>}
-                />
-                <Route
-                  path="/user-management"
-                  element={<RequireMenu codes={['USER_MANAGE']}><UserManagementPage /></RequireMenu>}
-                />
-                <Route path="/dashboard" element={<RequireMenu codes={['DASHBOARD']}><DashboardPage /></RequireMenu>} />
-                <Route
-                  path="/role-management"
-                  element={<RequireMenu codes={['ROLE_MANAGE']}><RoleManagementPage /></RequireMenu>}
-                />
-                <Route
-                  path="/access-conditions"
-                  element={<RequireMenu codes={['ACCESS_CONDITION']}><AccessConditionPage /></RequireMenu>}
-                />
-                <Route path="/api-keys" element={<RequireMenu codes={['API_KEY']}><ApiKeyPage /></RequireMenu>} />
-                <Route path="*" element={<HomeRedirect />} />
-              </Route>
-            </Routes>
+            <AppRoutes />
           </PermissionProvider>
         </AuthProvider>
       </NoticeProvider>

@@ -3,21 +3,14 @@ import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { errorMessage } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 
-/** 로그인 화면 */
-export default function LoginPage() {
-  const { me, login } = useAuth();
+/** 로그인 제출 상태 */
+function useLoginSubmit() {
+  const { login } = useAuth();
   const navigate = useNavigate();
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  if (me) {
-    return <Navigate to="/" replace />;
-  }
-
-  const onSubmit = async (event: FormEvent) => {
-    event.preventDefault();
+  const submit = async (username: string, password: string) => {
     setSubmitting(true);
     setError('');
     try {
@@ -28,6 +21,23 @@ export default function LoginPage() {
     } finally {
       setSubmitting(false);
     }
+  };
+  return { submit, error, submitting };
+}
+
+/** 로그인 화면 */
+export default function LoginPage() {
+  const { me } = useAuth();
+  const { submit, error, submitting } = useLoginSubmit();
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
+
+  if (me) {
+    return <Navigate to="/" replace />;
+  }
+  const onSubmit = (event: FormEvent) => {
+    event.preventDefault();
+    submit(username, password);
   };
 
   return (
@@ -40,18 +50,11 @@ export default function LoginPage() {
         </label>
         <label>
           비밀번호
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            autoComplete="current-password"
-            required
-          />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password" required />
         </label>
         {error && <p className="error-text">{error}</p>}
-        <button className="btn primary" disabled={submitting}>
-          {submitting ? '로그인 중…' : '로그인'}
-        </button>
+        <button className="btn primary" disabled={submitting}>{submitting ? '로그인 중…' : '로그인'}</button>
         <p className="muted">
           계정이 없나요? <Link to="/signup">회원가입</Link>
         </p>

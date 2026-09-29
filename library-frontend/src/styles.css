@@ -456,3 +456,7 @@ code {
   align-items: center;
   word-break: break-all;
 }
+
+.full-row {
+  grid-column: 1 / -1;
+}

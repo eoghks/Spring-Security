@@ -16,6 +16,22 @@ interface PermissionContextValue {
 
 const PermissionContext = createContext<PermissionContextValue | null>(null);
 
+/** 403 을 받으면 권한이 바뀌었을 수 있으므로 다시 받아오고 안내한다 */
+function usePermissionDeniedListener(
+  notify: (text: string, kind?: 'info' | 'success' | 'error') => void,
+  reload: () => Promise<void>,
+) {
+  useEffect(() => {
+    const onDenied = (event: Event) => {
+      const { code, message } = (event as CustomEvent<PermissionDeniedDetail>).detail;
+      notify(code === 'ACCESS_CONDITION_DENIED' ? '접속 조건(IP·기간·요일·시간)을 벗어났습니다.' : message, 'error');
+      reload().catch(() => undefined);
+    };
+    window.addEventListener(PERMISSION_DENIED_EVENT, onDenied);
+    return () => window.removeEventListener(PERMISSION_DENIED_EVENT, onDenied);
+  }, [notify, reload]);
+}
+
 /**
  * 로그인 사용자의 권한(/api/me/permissions)을 보관한다.
  * 403 을 받으면 권한이 바뀌었을 수 있으므로 다시 받아오고 안내한다.
@@ -44,15 +60,7 @@ export function PermissionProvider({ children }: { children: ReactNode }) {
     }
   }, [me, reload]);
 
-  useEffect(() => {
-    const onDenied = (event: Event) => {
-      const { code, message } = (event as CustomEvent<PermissionDeniedDetail>).detail;
-      notify(code === 'ACCESS_CONDITION_DENIED' ? '접속 조건(IP·기간·요일·시간)을 벗어났습니다.' : message, 'error');
-      reload().catch(() => undefined);
-    };
-    window.addEventListener(PERMISSION_DENIED_EVENT, onDenied);
-    return () => window.removeEventListener(PERMISSION_DENIED_EVENT, onDenied);
-  }, [notify, reload]);
+  usePermissionDeniedListener(notify, reload);
 
   const value = useMemo<PermissionContextValue>(
     () => ({

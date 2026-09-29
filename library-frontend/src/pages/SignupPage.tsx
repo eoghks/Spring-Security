@@ -13,6 +13,14 @@ interface SignupForm {
 
 const EMPTY: SignupForm = { username: '', password: '', passwordConfirm: '', name: '', email: '' };
 
+const FIELDS: { name: keyof SignupForm; label: string; type: string }[] = [
+  { name: 'username', label: '아이디', type: 'text' },
+  { name: 'password', label: '비밀번호', type: 'password' },
+  { name: 'passwordConfirm', label: '비밀번호 확인', type: 'password' },
+  { name: 'name', label: '이름', type: 'text' },
+  { name: 'email', label: '이메일', type: 'email' },
+];
+
 /** 서버와 같은 규칙으로 먼저 검사해 즉시 안내한다(최종 판단은 서버) */
 function validate(form: SignupForm): Record<string, string> {
   const errors: Record<string, string> = {};
@@ -43,9 +51,6 @@ export default function SignupPage() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [serverError, setServerError] = useState('');
 
-  const update = (field: keyof SignupForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
-    setForm({ ...form, [field]: e.target.value });
-
   const onSubmit = async (event: FormEvent) => {
     event.preventDefault();
     const clientErrors = validate(form);
@@ -63,23 +68,18 @@ export default function SignupPage() {
     }
   };
 
-  const field = (name: keyof SignupForm, label: string, type = 'text') => (
-    <label>
-      {label}
-      <input type={type} value={form[name]} onChange={update(name)} aria-invalid={Boolean(errors[name])} />
-      {errors[name] && <span className="error-text">{errors[name]}</span>}
-    </label>
-  );
-
   return (
     <div className="auth-page">
       <form className="card auth-card" onSubmit={onSubmit} noValidate>
         <h1>회원가입</h1>
-        {field('username', '아이디')}
-        {field('password', '비밀번호', 'password')}
-        {field('passwordConfirm', '비밀번호 확인', 'password')}
-        {field('name', '이름')}
-        {field('email', '이메일', 'email')}
+        {FIELDS.map(({ name, label, type }) => (
+          <label key={name}>
+            {label}
+            <input type={type} value={form[name]} aria-invalid={Boolean(errors[name])}
+              onChange={(e) => setForm({ ...form, [name]: e.target.value })} />
+            {errors[name] && <span className="error-text">{errors[name]}</span>}
+          </label>
+        ))}
         {serverError && <p className="error-text">{serverError}</p>}
         <button className="btn primary">가입하기</button>
         <p className="muted">
