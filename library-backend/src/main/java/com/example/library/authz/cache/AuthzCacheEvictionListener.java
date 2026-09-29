@@ -20,6 +20,7 @@ public class AuthzCacheEvictionListener {
 		switch (event) {
 			case AuthzChangedEvent.UserChanged changed -> authzCache.evictUser(changed.userId());
 			case AuthzChangedEvent.RoleChanged changed -> authzCache.evictRole(changed.roleId());
+			case AuthzChangedEvent.ApiKeyChanged changed -> authzCache.evictApiKey(changed.keyHash());
 		}
 	}
 }

@@ -12,4 +12,13 @@ public sealed interface AuthzChangedEvent {
 	/** 역할 보유 액션 변경 */
 	record RoleChanged(Long roleId) implements AuthzChangedEvent {
 	}
+
+	/** API Key 폐기·변경 */
+	record ApiKeyChanged(String keyHash) implements AuthzChangedEvent {
+
+		@Override
+		public String toString() {
+			return "ApiKeyChanged[keyHash=****]";
+		}
+	}
 }

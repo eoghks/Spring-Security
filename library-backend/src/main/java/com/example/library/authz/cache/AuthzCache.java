@@ -18,11 +18,13 @@ public class AuthzCache {
 
 	private final IMap<Long, UserAuthSnapshot> users;
 	private final IMap<Long, RoleActionsSnapshot> roles;
+	private final IMap<String, ApiKeySnapshot> apiKeys;
 	private final AuthzSnapshotLoader loader;
 
 	public AuthzCache(HazelcastInstance hazelcast, AuthzSnapshotLoader loader) {
 		this.users = hazelcast.getMap(CacheNames.USER_AUTH);
 		this.roles = hazelcast.getMap(CacheNames.ROLE_ACTIONS);
+		this.apiKeys = hazelcast.getMap(CacheNames.API_KEYS);
 		this.loader = loader;
 	}
 
@@ -50,6 +52,17 @@ public class AuthzCache {
 		return loaded;
 	}
 
+	/** API Key 스냅샷 조회(없으면 DB 적재). 존재하지 않는 해시는 캐시하지 않는다 */
+	public Optional<ApiKeySnapshot> findApiKey(String keyHash) {
+		Optional<ApiKeySnapshot> cached = Optional.ofNullable(apiKeys.get(keyHash));
+		if (cached.isPresent()) {
+			return cached;
+		}
+		Optional<ApiKeySnapshot> loaded = loader.loadApiKey(keyHash);
+		loaded.ifPresent(snapshot -> apiKeys.set(keyHash, snapshot));
+		return loaded;
+	}
+
 	public void evictUser(Long userId) {
 		users.delete(userId);
 		log.info("사용자 권한 캐시 evict: userId={}", userId);
@@ -58,5 +71,10 @@ public class AuthzCache {
 	public void evictRole(Long roleId) {
 		roles.delete(roleId);
 		log.info("역할 권한 캐시 evict: roleId={}", roleId);
+	}
+
+	public void evictApiKey(String keyHash) {
+		apiKeys.delete(keyHash);
+		log.info("API Key 캐시 evict");
 	}
 }
