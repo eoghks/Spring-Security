@@ -43,17 +43,28 @@ cd library-backend
 - Swagger UI: http://localhost:8080/swagger-ui.html
 - 빌드·테스트: `./gradlew build`
 
-PostgreSQL 로 실행:
+PostgreSQL 로 실행 (Docker 전용 컨테이너 — 로컬에 설치된 5432 PostgreSQL 과 겹치지 않게 호스트 포트 **55432**):
 
 ```bash
+cd library-backend
+docker compose up -d                       # postgres:16, db/user/password = library (개발용)
+
 # 최초 1회는 스키마·시드 적용
-DB_URL=jdbc:postgresql://localhost:5432/library DB_USERNAME=library DB_PASSWORD=library DB_INIT_MODE=always \
-  ./gradlew bootRun --args='--spring.profiles.active=postgres'
-# 이후에는 DB_INIT_MODE 없이 실행
+DB_INIT_MODE=always ./gradlew bootRun --args='--spring.profiles.active=postgres'
+# 이후에는 DB_INIT_MODE 없이 실행(데이터 유지)
+./gradlew bootRun --args='--spring.profiles.active=postgres'
+
+docker compose down -v                     # 정리(볼륨까지 삭제)
 ```
 
+- `postgres` 프로필 기본 접속은 `jdbc:postgresql://localhost:55432/library` 이고 `DB_URL`·`DB_USERNAME`·`DB_PASSWORD` 로 덮어쓴다.
+- 같은 `schema.sql`·`data.sql` 이 H2(PostgreSQL 모드)와 PostgreSQL 16 양쪽에서 수정 없이 적재된다. 수동 검증 항목: 시드 적재,
+  로그인·도서 검색/상세·대출/반납·권한 403·API Key 조회·없는 키 429·동시 가입 409·접속 조건 밖 로그인 403, 재기동 후 데이터 유지.
+  빌드가 Docker 에 의존하지 않도록 PostgreSQL 자동 테스트(Testcontainers)는 두지 않았다.
+
 주요 환경 변수: `JWT_SECRET`(Base64, 운영 필수 교체), `TRUSTED_PROXIES`(예: `10.0.0.0/8`),
-`HAZELCAST_MEMBERS`(예: `10.0.0.11,10.0.0.12`), `HAZELCAST_PORT`, `HAZELCAST_CLUSTER`.
+`HAZELCAST_MEMBERS`(예: `10.0.0.11,10.0.0.12`), `HAZELCAST_PORT`, `HAZELCAST_CLUSTER`,
+`API_KEY_NEGATIVE_CACHE_TTL`(기본 `60s`), `API_KEY_MAX_FAILURES_PER_MINUTE`(기본 `20`).
 
 ### 프론트엔드 (포트 5173)
 
