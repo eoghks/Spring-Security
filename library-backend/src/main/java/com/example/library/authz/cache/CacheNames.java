@@ -1,0 +1,27 @@
+package com.example.library.authz.cache;
+
+import java.util.List;
+
+/**
+ * Hazelcast 분산 자료구조 이름.
+ */
+public final class CacheNames {
+
+	/** userId → 사용자 인증 스냅샷(역할·잠금·접속 조건) */
+	public static final String USER_AUTH = "user-auth";
+
+	/** roleId → 보유 액션 코드 집합 */
+	public static final String ROLE_ACTIONS = "role-actions";
+
+	/** API Key 해시 → API Key 스냅샷(액션·허용 IP·만료) */
+	public static final String API_KEYS = "api-keys";
+
+	/** 인가 규칙(action_urls) 재로딩 알림 토픽 */
+	public static final String AUTHZ_RELOAD_TOPIC = "authz-rules-reload";
+
+	/** TTL 을 적용할 IMap 목록 */
+	public static final List<String> MAPS = List.of(USER_AUTH, ROLE_ACTIONS, API_KEYS);
+
+	private CacheNames() {
+	}
+}

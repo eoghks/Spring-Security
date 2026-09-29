@@ -1,13 +1,12 @@
 package com.example.library;
 
+import com.example.library.support.IntegrationTestSupport;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
 
 /**
  * 애플리케이션 컨텍스트 기동 확인.
  */
-@SpringBootTest
-class LibraryApplicationTests {
+class LibraryApplicationTests extends IntegrationTestSupport {
 
 	@Test
 	void contextLoads() {
