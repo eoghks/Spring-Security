@@ -31,6 +31,20 @@ class DataIntegrityErrorTranslatorTest {
 	}
 
 	@Test
+	@DisplayName("ISBN·액션 URL 유니크 위반은 각각 DUPLICATE_ISBN·DUPLICATE_ACTION_URL")
+	void isbnAndActionUrl() {
+		SQLException isbn = new SQLException(
+				"ERROR: duplicate key value violates unique constraint \"uk_books_isbn\"", "23505");
+		ConstraintViolationException actionUrl = new ConstraintViolationException("could not execute statement",
+				new SQLException("Unique index or primary key violation"), "PUBLIC.UK_ACTION_URLS_INDEX_A");
+
+		assertThat(DataIntegrityErrorTranslator.translate(new DataIntegrityViolationException("중복", isbn)))
+				.contains(ErrorCode.DUPLICATE_ISBN);
+		assertThat(DataIntegrityErrorTranslator.translate(new DataIntegrityViolationException("중복", actionUrl)))
+				.contains(ErrorCode.DUPLICATE_ACTION_URL);
+	}
+
+	@Test
 	@DisplayName("알 수 없는 제약 위반은 번역하지 않는다(500 유지)")
 	void unknownConstraint() {
 		SQLException sql = new SQLException("ERROR: insert or update violates foreign key constraint \"fk_x\"");
