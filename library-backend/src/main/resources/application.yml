@@ -24,3 +24,13 @@ spring:
         format_sql: false
         jdbc:
           time_zone: Asia/Seoul
+
+app:
+  # 날짜·시간 판정(대출 기한, 접속 조건)에 쓰는 시간대
+  zone-id: Asia/Seoul
+  jwt:
+    # 개발용 기본 키(Base64, 256bit 이상). 운영에서는 반드시 환경 변수 JWT_SECRET 으로 교체한다.
+    secret: ${JWT_SECRET:bGlicmFyeS1kZXYtb25seS1qd3Qtc2VjcmV0LWtleS1jaGFuZ2UtbWUtaW4tcHJvZA==}
+    issuer: library-backend
+    access-token-ttl: 15m
+    refresh-token-ttl: 7d
