@@ -349,3 +349,71 @@ input[aria-invalid='true'] {
 .card.stat.alert .stat-value {
   color: var(--color-danger);
 }
+
+label.inline {
+  flex-direction: row;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 400;
+}
+
+.role-tabs {
+  display: flex;
+  gap: 0.3rem;
+  flex: 1;
+}
+
+.action-cell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1rem;
+}
+
+.action-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+button.link {
+  border: none;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font-size: 0.78rem;
+  padding: 0;
+  text-decoration: underline;
+}
+
+.url-panel {
+  background: #fafbfd;
+  border: 1px dashed var(--color-border);
+  border-radius: 8px;
+  padding: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.url-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.url-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+code {
+  font-family: 'JetBrains Mono', Consolas, monospace;
+  font-size: 0.85rem;
+  background: #eef1f6;
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+}

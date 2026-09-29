@@ -11,6 +11,7 @@ import DashboardPage from './pages/DashboardPage';
 import LoanManagementPage from './pages/LoanManagementPage';
 import MyLoansPage from './pages/MyLoansPage';
 import LoginPage from './pages/LoginPage';
+import RoleManagementPage from './pages/RoleManagementPage';
 import SignupPage from './pages/SignupPage';
 import UserManagementPage from './pages/UserManagementPage';
 
@@ -44,6 +45,10 @@ export default function App() {
                   element={<RequireMenu codes={['USER_MANAGE']}><UserManagementPage /></RequireMenu>}
                 />
                 <Route path="/dashboard" element={<RequireMenu codes={['DASHBOARD']}><DashboardPage /></RequireMenu>} />
+                <Route
+                  path="/role-management"
+                  element={<RequireMenu codes={['ROLE_MANAGE']}><RoleManagementPage /></RequireMenu>}
+                />
                 <Route path="*" element={<HomeRedirect />} />
               </Route>
             </Routes>
