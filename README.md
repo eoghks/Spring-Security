@@ -67,7 +67,7 @@ docker compose down -v                     # 정리(볼륨까지 삭제)
   로그인·도서 검색/상세·대출/반납·권한 403·API Key 조회·없는 키 429·동시 가입 409·접속 조건 밖 로그인 403, 재기동 후 데이터 유지.
   빌드가 Docker 에 의존하지 않도록 PostgreSQL 자동 테스트(Testcontainers)는 두지 않았다.
 
-주요 환경 변수: `JWT_SECRET`(Base64·32바이트 이상, 기본 개발 프로필 외 필수), `TRUSTED_PROXIES`(예: `10.0.0.0/8`),
+주요 환경 변수: `JWT_SECRET`(Base64·32바이트 이상, 기본 개발 프로필 외 필수), `TRUSTED_PROXIES`(프록시 자신의 주소만, 예: `10.0.0.5/32` — 클라이언트가 속한 넓은 대역을 넣지 않는다),
 `HAZELCAST_MEMBERS`(예: `10.0.0.11,10.0.0.12`), `HAZELCAST_INTERFACE`(기본 `127.0.0.1`, 다중 노드는 사설 대역 예: `10.0.0.*`),
 `HAZELCAST_PORT`, `HAZELCAST_CLUSTER`,
 `API_KEY_NEGATIVE_CACHE_TTL`(기본 `60s`), `API_KEY_MAX_FAILURES_PER_MINUTE`(기본 `20`), `LOGIN_MAX_FAILURES_PER_MINUTE`(기본 `30`).
