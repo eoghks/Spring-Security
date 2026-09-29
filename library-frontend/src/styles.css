@@ -1,0 +1,23 @@
+/* 공통 스타일 — UI 라이브러리 없이 순수 CSS */
+:root {
+  --color-primary: #2f6fed;
+  --color-primary-dark: #1f4fb8;
+  --color-danger: #d64545;
+  --color-success: #2e9d5b;
+  --color-warning: #c98a12;
+  --color-border: #dde1e8;
+  --color-bg: #f5f7fb;
+  --color-text: #1f2430;
+  --color-muted: #6b7385;
+  font-family: 'Pretendard', 'Apple SD Gothic Neo', 'Malgun Gothic', system-ui, sans-serif;
+  color: var(--color-text);
+  background: var(--color-bg);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
