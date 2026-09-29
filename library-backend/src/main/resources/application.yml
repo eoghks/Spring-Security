@@ -40,6 +40,11 @@ app:
     max-login-attempts: 5
     # X-Forwarded-For 를 신뢰할 프록시 IP·CIDR (비어 있으면 항상 remoteAddr 사용)
     trusted-proxies: ${TRUSTED_PROXIES:}
+    api-key:
+      # 존재하지 않는 API Key 해시를 음성 캐시에 두는 시간(그동안 같은 키로 DB 를 다시 조회하지 않는다)
+      negative-cache-ttl: ${API_KEY_NEGATIVE_CACHE_TTL:60s}
+      # 클라이언트 IP 당 1분 동안 허용하는 API Key 인증 실패 횟수(초과 시 429 TOO_MANY_REQUESTS)
+      max-failures-per-minute: ${API_KEY_MAX_FAILURES_PER_MINUTE:20}
   jwt:
     # 개발용 기본 키(Base64, 256bit 이상). 운영에서는 반드시 환경 변수 JWT_SECRET 으로 교체한다.
     secret: ${JWT_SECRET:bGlicmFyeS1kZXYtb25seS1qd3Qtc2VjcmV0LWtleS1jaGFuZ2UtbWUtaW4tcHJvZA==}

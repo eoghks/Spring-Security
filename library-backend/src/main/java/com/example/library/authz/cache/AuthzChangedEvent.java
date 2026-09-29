@@ -13,7 +13,7 @@ public sealed interface AuthzChangedEvent {
 	record RoleChanged(Long roleId) implements AuthzChangedEvent {
 	}
 
-	/** API Key 폐기·변경 */
+	/** API Key 발급·폐기·변경 */
 	record ApiKeyChanged(String keyHash) implements AuthzChangedEvent {
 
 		@Override

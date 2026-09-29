@@ -9,10 +9,12 @@ import static org.mockito.Mockito.verify;
 
 import com.example.library.authz.rule.AuthorizationRuleBroadcaster;
 import com.example.library.authz.rule.AuthorizationRuleRegistry;
+import com.example.library.config.ApiKeyProtectionProperties;
 import com.example.library.config.HazelcastConfig;
 import com.example.library.config.HazelcastProperties;
 import com.hazelcast.core.Hazelcast;
 import com.hazelcast.core.HazelcastInstance;
+import java.time.Duration;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -28,6 +30,7 @@ import org.junit.jupiter.api.Test;
 class TwoNodeAuthzCacheTest {
 
 	private static final long ROLE_ID = 3L;
+	private static final ApiKeyProtectionProperties PROTECTION = new ApiKeyProtectionProperties(Duration.ofSeconds(60), 20);
 
 	private static HazelcastInstance nodeA;
 	private static HazelcastInstance nodeB;
@@ -57,8 +60,8 @@ class TwoNodeAuthzCacheTest {
 	@DisplayName("노드 A 에서 역할 권한을 바꿔 evict 하면 노드 B 의 다음 조회에 즉시 반영된다")
 	void evictOnNodeAReflectsOnNodeB() {
 		AuthzSnapshotLoader loader = mock(AuthzSnapshotLoader.class);
-		AuthzCache cacheA = new AuthzCache(nodeA, loader);
-		AuthzCache cacheB = new AuthzCache(nodeB, loader);
+		AuthzCache cacheA = new AuthzCache(nodeA, loader, PROTECTION);
+		AuthzCache cacheB = new AuthzCache(nodeB, loader, PROTECTION);
 		given(loader.loadRoleActions(ROLE_ID)).willReturn(new RoleActionsSnapshot(ROLE_ID, Set.of("BOOK:READ")));
 
 		assertThat(cacheB.roleActionCodes(ROLE_ID)).containsExactly("BOOK:READ");

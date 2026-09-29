@@ -70,6 +70,8 @@ public class ApiKeyService {
 				.actionIds(actionIds)
 				.allowedIps(new HashSet<>(request.allowedIps()))
 				.build());
+		// 같은 해시가 음성 캐시("없는 키")에 남아 있지 않도록 커밋 후 지운다
+		eventPublisher.publishEvent(new AuthzChangedEvent.ApiKeyChanged(key.hash()));
 		log.info("API Key 발급: id={}, prefix={}, issuer={}", saved.getId(), key.prefix(), issuer.userId());
 		return new IssuedApiKeyResponse(key.raw(), ApiKeyResponse.of(saved, actionCodes, now));
 	}

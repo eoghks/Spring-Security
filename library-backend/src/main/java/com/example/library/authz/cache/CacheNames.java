@@ -16,6 +16,12 @@ public final class CacheNames {
 	/** API Key 해시 → API Key 스냅샷(액션·허용 IP·만료) */
 	public static final String API_KEYS = "api-keys";
 
+	/** 존재하지 않는 API Key 해시(음성 캐시, 항목별 짧은 TTL) */
+	public static final String API_KEY_MISSES = "api-key-misses";
+
+	/** "클라이언트 IP|분" → API Key 인증 실패 횟수(분 단위 버킷) */
+	public static final String API_KEY_FAILURES = "api-key-failures";
+
 	/** 인가 규칙(action_urls) 재로딩 알림 토픽 */
 	public static final String AUTHZ_RELOAD_TOPIC = "authz-rules-reload";
 
