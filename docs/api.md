@@ -31,6 +31,7 @@ POST /api/auth/login
 
 200 { "accessToken": "eyJ...", "refreshToken": "q3Jx...", "tokenType": "Bearer", "expiresIn": 900 }
 401 { "code": "INVALID_CREDENTIALS" }   // 5회 연속 실패 시 { "code": "ACCOUNT_LOCKED" }
+403 { "code": "ACCESS_CONDITION_DENIED" }  // 비밀번호는 맞지만 접속 조건(IP·기간·요일·시간) 밖 — 실패 횟수에 넣지 않음
 ```
 
 ```http
@@ -39,6 +40,7 @@ POST /api/auth/refresh
 
 200 { "accessToken": "...", "refreshToken": "(새 토큰)", ... }
 401 { "code": "INVALID_REFRESH_TOKEN" }  // 만료·폐기·재사용(재사용이면 그 사용자 토큰 전체 폐기)
+403 { "code": "ACCESS_CONDITION_DENIED" }  // 접속 조건 밖 — 제시한 Refresh 토큰은 소비되어 재사용 불가
 ```
 
 ## 내 정보 (authenticated_urls — 로그인만 필요, API Key 불가)

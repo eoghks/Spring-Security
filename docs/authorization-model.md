@@ -109,6 +109,8 @@ API Key(api_keys) ──< api_key_actions >┘
 | start_time / end_time | 경계 포함. 시작 > 종료이면 자정을 넘는 구간(예: 22:00~06:00) |
 
 - 인증된 요청마다 `AccessConditionFilter` 가 검사한다. 위반 시 **403 `ACCESS_CONDITION_DENIED`** — 구체 사유(IP/기간/요일/시간)는 응답에 주지 않고 로그에만 남긴다(IP 는 마스킹).
+- 로그인(`/api/auth/login`)·재발급(`/api/auth/refresh`) 시에도 같은 판정기로 검사해, 조건 밖에서는 토큰 자체를 발급하지 않는다(같은 403 코드).
+  로그인 실패 횟수에는 넣지 않는다. 프론트 로그인 화면은 "허용된 접속 환경이 아닙니다. 관리자에게 문의하세요." 를 표시한다.
 - 클라이언트 IP 는 `request.getRemoteAddr()` 기준이다. `X-Forwarded-For` 는 직전 홉이 `app.security.trusted-proxies` 에
   등록된 프록시일 때만 보며, 오른쪽(가까운 홉)부터 거슬러 첫 번째 비신뢰 주소를 클라이언트로 본다(왼쪽 값 위조 방지).
 - IP 값은 저장 전에 엄격히 검증한다. Spring 의 `IpAddressMatcher` 는 IP 가 아닌 문자열을 호스트명으로 보고 DNS 조회를 시도하기 때문이다.
