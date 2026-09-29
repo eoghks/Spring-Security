@@ -30,6 +30,7 @@ public enum ErrorCode {
 	INVALID_URL_PATTERN(HttpStatus.BAD_REQUEST, "URL 패턴 형식이 올바르지 않습니다."),
 	SYSTEM_ROLE_PROTECTED(HttpStatus.BAD_REQUEST, "관리자 역할의 권한은 변경할 수 없습니다."),
 	INVALID_ACTION(HttpStatus.BAD_REQUEST, "존재하지 않는 액션이 포함되어 있습니다."),
+	CANNOT_CHANGE_OWN_ROLE(HttpStatus.BAD_REQUEST, "자기 자신의 역할은 변경할 수 없습니다."),
 
 	// 대상 없음(404)
 	USER_NOT_FOUND(HttpStatus.NOT_FOUND, "사용자를 찾을 수 없습니다."),
