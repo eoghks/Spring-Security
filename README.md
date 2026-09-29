@@ -62,6 +62,10 @@ DB_INIT_MODE=always ./gradlew bootRun --args='--spring.profiles.active=postgres'
 docker compose down -v                     # 정리(볼륨까지 삭제)
 ```
 
+> 이전 버전으로 만든 PostgreSQL 볼륨은 `books.version` 컬럼과 `uk_books_isbn` 제약 이름이 없어 기동(스키마 검증)에 실패하거나
+> ISBN 경합이 500 이 된다. `schema.sql` 은 `CREATE TABLE IF NOT EXISTS` 라 기존 테이블을 고치지 않으므로,
+> 개발 DB 는 `docker compose down -v` 후 `DB_INIT_MODE=always` 로 다시 적재한다.
+
 - `postgres` 프로필 기본 접속은 `jdbc:postgresql://localhost:55432/library` 이고 `DB_URL`·`DB_USERNAME`·`DB_PASSWORD` 로 덮어쓴다.
 - 같은 `schema.sql`·`data.sql` 이 H2(PostgreSQL 모드)와 PostgreSQL 16 양쪽에서 수정 없이 적재된다. 수동 검증 항목: 시드 적재,
   로그인·도서 검색/상세·대출/반납·권한 403·API Key 조회·없는 키 429·동시 가입 409·접속 조건 밖 로그인 403, 재기동 후 데이터 유지.
@@ -106,6 +110,14 @@ curl -H "X-API-KEY: lib_Elsu1z3_KkwNJYk7v7R7BxLaFBJpJV4qc61GHDjZvNY" "http://loc
 | 역할·권한 관리 | _(추가 예정)_ |
 | 접속 조건 관리 | _(추가 예정)_ |
 | API Key 발급 | _(추가 예정)_ |
+
+## 알려진 한계
+
+- Hazelcast 오픈소스판은 멤버 인증·전송 암호화가 없다. 루프백·사설 인터페이스 바인딩으로 노출을 줄였지만, 다중 노드는 방화벽으로 클러스터 포트를 애플리케이션 노드끼리만 열어야 한다(직렬화 필터는 두지 않았다).
+- 마지막 활성 관리자 계정은 로그인 실패로 잠그지 않는다(잠그면 풀 사람이 없음). 이 계정은 IP 단위 로그인 실패 제한만 받는다.
+- 로그인·API Key 실패 제한은 고정 1분 창이라 분 경계 앞뒤로 한도의 최대 2배까지 시도될 수 있고, NAT 뒤 사용자는 한 IP 로 함께 세어진다.
+- 탭 간 토큰 재발급 직렬화는 Web Locks 에 기대므로, 이를 지원하지 않는 브라우저에서 여러 탭이 동시에 재발급하면 재사용 탐지로 로그아웃될 수 있다.
+- 권한 캐시 적재와 evict 가 겹치면 그 순간의 요청 하나는 적재한 옛 값으로 처리된다(캐시에는 남기지 않으므로 다음 요청부터 새 값).
 
 ## 문서
 

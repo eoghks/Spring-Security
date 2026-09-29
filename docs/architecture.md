@@ -172,8 +172,13 @@ HAZELCAST_INTERFACE=10.0.0.* HAZELCAST_MEMBERS=10.0.0.11,10.0.0.12 java -jar lib
 ```
 
 클라이언트는 `message` 가 아니라 `code` 로 분기한다. 401 코드: `UNAUTHORIZED`, `TOKEN_EXPIRED`, `INVALID_TOKEN`,
-`INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `INVALID_REFRESH_TOKEN`, `INVALID_API_KEY` / 403 코드: `ACCESS_DENIED`, `ACCESS_CONDITION_DENIED`
-/ 429 코드: `TOO_MANY_REQUESTS`(API Key 인증 실패 한도 초과, `Retry-After` 헤더 포함).
+`INVALID_CREDENTIALS`, `ACCOUNT_LOCKED`, `INVALID_REFRESH_TOKEN`, `INVALID_API_KEY` / 403 코드: `ACCESS_DENIED`, `ACCESS_CONDITION_DENIED`,
+`USER_ONLY`(사용자 전용 API 를 API Key 로 호출), `CANNOT_EDIT_OWN_ROLE`, `ACTION_NOT_OWNED`
+/ 409 코드(동시성·중복): `CONCURRENT_MODIFICATION`, `ALREADY_RETURNED`, `DUPLICATE_USERNAME`·`DUPLICATE_ISBN`·`DUPLICATE_ACTION_URL`, `LAST_ADMIN_PROTECTED` 등
+/ 429 코드: `TOO_MANY_REQUESTS`(API Key 인증 실패 한도 초과 시 `Retry-After` 헤더 포함, IP 별 로그인 실패 한도 초과).
+
+- 로그에는 입력값(아이디·이메일 등)이 담긴 DB 드라이버 메시지를 남기지 않는다. 알 수 없는 제약 위반 500 은 제약 이름만 기록하고,
+  그 밖의 500 은 원인 추적을 위해 스택과 함께 기록한다.
 
 ## 8. 프론트엔드
 

@@ -30,8 +30,10 @@ POST /api/auth/login
 { "username": "member", "password": "Member123!" }
 
 200 { "accessToken": "eyJ...", "refreshToken": "q3Jx...", "tokenType": "Bearer", "expiresIn": 900 }
-401 { "code": "INVALID_CREDENTIALS" }   // 5회 연속 실패 시 { "code": "ACCOUNT_LOCKED" }
+401 { "code": "INVALID_CREDENTIALS" }   // 틀린 비밀번호·없는 아이디(잠긴 계정이어도 비밀번호가 틀리면 이 코드)
+401 { "code": "ACCOUNT_LOCKED" }        // 5회 연속 실패로 잠긴 계정에 올바른 비밀번호를 댄 경우
 403 { "code": "ACCESS_CONDITION_DENIED" }  // 비밀번호는 맞지만 접속 조건(IP·기간·요일·시간) 밖 — 실패 횟수에 넣지 않음
+429 { "code": "TOO_MANY_REQUESTS" }     // 이 IP 의 이번 분 로그인 실패가 한도(기본 30회) 도달
 ```
 
 ```http
@@ -39,7 +41,7 @@ POST /api/auth/refresh
 { "refreshToken": "q3Jx..." }
 
 200 { "accessToken": "...", "refreshToken": "(새 토큰)", ... }
-401 { "code": "INVALID_REFRESH_TOKEN" }  // 만료·폐기·재사용(재사용이면 그 사용자 토큰 전체 폐기)
+401 { "code": "INVALID_REFRESH_TOKEN" }  // 만료·폐기·재사용(재사용·동시 제시면 그 사용자 토큰 전체 폐기)
 403 { "code": "ACCESS_CONDITION_DENIED" }  // 접속 조건 밖 — 제시한 Refresh 토큰은 소비되어 재사용 불가
 ```
 
@@ -80,6 +82,8 @@ POST /api/books
 { "isbn": "9780000000001", "title": "새 책", "author": "저자", "publisher": "출판사", "category": "IT", "totalQuantity": 2 }
 201 { "id": 22, ..., "availableQuantity": 2 }
 400 { "code": "INVALID_QUANTITY" }         // 보유 수량 < 대출 중 권수
+409 { "code": "DUPLICATE_ISBN" }           // ISBN 중복(동시 등록 경합 포함)
+409 { "code": "CONCURRENT_MODIFICATION" }  // 수정 중 대출·반납 등이 먼저 커밋됨 — 다시 조회 후 저장
 409 { "code": "BOOK_HAS_ACTIVE_LOANS" }    // 삭제 시 대출 중
 ```
 
@@ -97,6 +101,8 @@ curl -H "X-API-KEY: lib_Elsu1z3_KkwNJYk7v7R7BxLaFBJpJV4qc61GHDjZvNY" http://loca
 | GET | `/api/loans/me` | `MY_LOAN:READ` |
 | POST | `/api/loans/{id}/return` | `MY_LOAN:RETURN` (본인 대출만, 남의 것은 404) |
 
+사용자 로그인 전용이다 — API Key 로 호출하면 403 `USER_ONLY`.
+
 ```http
 POST /api/loans
 { "bookId": 2 }
@@ -106,6 +112,7 @@ POST /api/loans
 409 { "code": "OVERDUE_LOAN_EXISTS" }   // 연체 중
 409 { "code": "ALREADY_BORROWED" }      // 같은 책 대출 중
 409 { "code": "BOOK_NOT_AVAILABLE" }    // 재고 없음
+409 { "code": "ALREADY_RETURNED" }      // (반납) 이미 반납됨 — 동시 반납의 두 번째 요청 포함
 ```
 
 ## 대출 관리 (사서)
@@ -146,6 +153,8 @@ PUT /api/admin/users/4/role
 { "roleId": 2 }
 200 { "id": 4, "username": "newbie01", "roleCode": "LIBRARIAN", ... }   // 기존 토큰에도 다음 요청부터 반영
 400 { "code": "CANNOT_CHANGE_OWN_ROLE" }
+403 { "code": "ACTION_NOT_OWNED" }        // 대상의 현재·새 역할 액션을 행위자가 모두 갖고 있지 않음(예: 관리자 아닌 사람의 ADMIN 부여)
+409 { "code": "LAST_ADMIN_PROTECTED" }    // 마지막 활성 관리자의 역할 변경
 ```
 
 ## 역할·권한 관리
@@ -170,10 +179,14 @@ PUT /api/admin/roles/3/actions
 { "actionIds": [2, 3, 4, 5, 1] }
 200 { "roleId": 3, "actionIds": [1, 2, 3, 4, 5] }
 400 { "code": "SYSTEM_ROLE_PROTECTED" }   // ADMIN 역할
+403 { "code": "CANNOT_EDIT_OWN_ROLE" }    // 자기 역할
+403 { "code": "ACTION_NOT_OWNED" }        // 새로 추가하는 액션을 행위자가 보유하지 않음(회수는 가능)
 
 POST /api/admin/actions/6/urls
 { "httpMethod": "GET", "urlPattern": "/api/admin/users" }
 201 { "id": 38, "httpMethod": "GET", "urlPattern": "/api/admin/users" }   // 커밋 후 전 노드 규칙 재적재
+403 { "code": "CANNOT_EDIT_OWN_ROLE" }    // 자기 역할이 보유한 액션의 URL 추가·삭제(관리자 역할은 허용)
+409 { "code": "DUPLICATE_ACTION_URL" }    // 같은 URL 이 이미 있음(동시 추가 경합 포함)
 ```
 
 URL 패턴은 리터럴 세그먼트, `{변수}`, `*`, 끝의 `/**` 만 허용한다.
@@ -202,7 +215,7 @@ PUT /api/admin/access-conditions/3
 | 메서드 | URL | 필요 권한 |
 |---|---|---|
 | GET | `/api/admin/api-keys` | `API_KEY:READ` |
-| POST | `/api/admin/api-keys` | `API_KEY:ISSUE` (본인 보유 액션만 부여 가능) |
+| POST | `/api/admin/api-keys` | `API_KEY:ISSUE` (본인 보유 액션만 부여 가능, 사용자 로그인 전용) |
 | POST | `/api/admin/api-keys/{id}/revoke` | `API_KEY:REVOKE` |
 
 ```http
@@ -213,3 +226,5 @@ POST /api/admin/api-keys
 POST /api/admin/api-keys/2/revoke
 200 { "id": 2, "status": "REVOKED", ... }   // 이후 이 키로 호출하면 401 INVALID_API_KEY
 ```
+
+키의 실효 권한은 `부여 액션 ∩ 발급자의 현재 역할 액션` 이고, 발급자가 잠기면 401 `INVALID_API_KEY`, 발급자 접속 조건 밖이면 403 `ACCESS_CONDITION_DENIED` 다.
