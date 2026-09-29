@@ -59,7 +59,8 @@ api.interceptors.response.use(
         tokenStore.clear();
         emitAuthExpired();
       }
-    } else if (status === 403) {
+    } else if (status === 403 && !config?.url?.startsWith(AUTH_PATH)) {
+      // 인증 API(로그인 등)의 403 은 화면이 직접 안내하므로 권한 재조회 알림을 보내지 않는다
       const body = error.response?.data;
       emitPermissionDenied({ code: body?.code ?? 'ACCESS_DENIED', message: body?.message ?? '접근 권한이 없습니다.' });
     }
@@ -73,6 +74,14 @@ export function errorMessage(error: unknown, fallback = '요청을 처리하지 
     return error.response?.data?.message ?? fallback;
   }
   return fallback;
+}
+
+/** 오류 응답의 code 를 꺼낸다(없으면 빈 문자열) */
+export function errorCode(error: unknown): string {
+  if (axios.isAxiosError<ErrorResponse>(error)) {
+    return error.response?.data?.code ?? '';
+  }
+  return '';
 }
 
 /** 오류 응답의 필드 오류를 { 필드: 메시지 } 로 변환한다 */

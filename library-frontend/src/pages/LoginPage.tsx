@@ -1,7 +1,17 @@
 import { useState, type FormEvent } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { errorMessage } from '../api/client';
+import { errorCode, errorMessage } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+
+/** 접속 조건(IP·기간·요일·시간) 위반 안내 — 구체 사유는 서버 로그에만 남는다 */
+const ACCESS_CONDITION_DENIED_MESSAGE = '허용된 접속 환경이 아닙니다. 관리자에게 문의하세요.';
+
+/** 로그인 실패 안내 문구 */
+function loginErrorMessage(error: unknown): string {
+  return errorCode(error) === 'ACCESS_CONDITION_DENIED'
+    ? ACCESS_CONDITION_DENIED_MESSAGE
+    : errorMessage(error, '로그인에 실패했습니다.');
+}
 
 /** 로그인 제출 상태 */
 function useLoginSubmit() {
@@ -17,7 +27,7 @@ function useLoginSubmit() {
       await login(username, password);
       navigate('/', { replace: true });
     } catch (e) {
-      setError(errorMessage(e, '로그인에 실패했습니다.'));
+      setError(loginErrorMessage(e));
     } finally {
       setSubmitting(false);
     }
