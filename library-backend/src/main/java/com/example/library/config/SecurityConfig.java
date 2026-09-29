@@ -4,8 +4,10 @@ import com.example.library.apikey.application.ApiKeyUsageRecorder;
 import com.example.library.apikey.domain.ApiKeyCodec;
 import com.example.library.auth.token.JwtProvider;
 import com.example.library.authz.cache.AuthzCache;
+import com.example.library.common.error.ErrorResponseWriter;
 import com.example.library.common.net.ClientIpResolver;
 import com.example.library.security.AccessConditionFilter;
+import com.example.library.security.ApiKeyFailureLimiter;
 import com.example.library.security.ApiKeyAuthenticationFilter;
 import com.example.library.security.JsonAccessDeniedHandler;
 import com.example.library.security.JsonAuthenticationEntryPoint;
@@ -41,6 +43,8 @@ public class SecurityConfig {
 	private final ClientIpResolver clientIpResolver;
 	private final ApiKeyCodec apiKeyCodec;
 	private final ApiKeyUsageRecorder apiKeyUsageRecorder;
+	private final ApiKeyFailureLimiter apiKeyFailureLimiter;
+	private final ErrorResponseWriter errorResponseWriter;
 	private final Clock clock;
 
 	@Bean
@@ -62,7 +66,8 @@ public class SecurityConfig {
 				// 순서: API Key 인증 → JWT 인증 → 접속 조건 검사 → (인가)
 				// 필터는 빈으로 등록하지 않아 서블릿 필터로 중복 등록되지 않는다
 				.addFilterBefore(new ApiKeyAuthenticationFilter(apiKeyCodec, authzCache, apiKeyUsageRecorder,
-						authenticationEntryPoint, clock), UsernamePasswordAuthenticationFilter.class)
+						authenticationEntryPoint, apiKeyFailureLimiter, clientIpResolver, errorResponseWriter, clock),
+						UsernamePasswordAuthenticationFilter.class)
 				.addFilterAfter(new JwtAuthenticationFilter(jwtProvider, authzCache), ApiKeyAuthenticationFilter.class)
 				.addFilterAfter(new AccessConditionFilter(authzCache, clientIpResolver, accessDeniedHandler, clock),
 						JwtAuthenticationFilter.class);

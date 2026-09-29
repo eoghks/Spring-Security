@@ -15,6 +15,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class HazelcastConfig {
 
+	/** 분 단위 실패 버킷은 해당 분이 지나면 쓸모없으므로 넉넉히 2분 뒤 사라지게 한다 */
+	private static final int FAILURE_BUCKET_TTL_SECONDS = 120;
+
 	@Bean
 	public Config hazelcastMemberConfig(HazelcastProperties properties) {
 		return createConfig(properties);
@@ -31,6 +34,7 @@ public class HazelcastConfig {
 		for (String mapName : CacheNames.MAPS) {
 			config.addMapConfig(new MapConfig(mapName).setTimeToLiveSeconds(properties.timeToLiveSeconds()));
 		}
+		config.addMapConfig(new MapConfig(CacheNames.API_KEY_FAILURES).setTimeToLiveSeconds(FAILURE_BUCKET_TTL_SECONDS));
 		return config;
 	}
 

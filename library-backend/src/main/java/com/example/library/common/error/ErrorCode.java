@@ -58,6 +58,9 @@ public enum ErrorCode {
 	BOOK_HAS_LOAN_HISTORY(HttpStatus.CONFLICT, "대출 이력이 있는 도서는 삭제할 수 없습니다. 보유 수량을 0 으로 조정하세요."),
 	API_KEY_ALREADY_REVOKED(HttpStatus.CONFLICT, "이미 폐기된 API Key 입니다."),
 
+	// 요청 과다(429)
+	TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도하세요."),
+
 	// 서버 오류(500)
 	INTERNAL_ERROR(HttpStatus.INTERNAL_SERVER_ERROR, "서버 오류가 발생했습니다.");
 
