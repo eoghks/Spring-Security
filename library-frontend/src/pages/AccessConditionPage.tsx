@@ -53,7 +53,7 @@ function ConditionFields({ form, onChange }: { form: ConditionForm; onChange: (f
       {input('validFrom', '시작일', 'date')}
       {input('validTo', '종료일', 'date')}
       {input('startTime', '시작 시각', 'time')}
-      {input('endTime', '종료 시각 (시작보다 이르면 자정을 넘는 구간)', 'time')}
+      {input('endTime', '종료 시각 (그 분까지 포함, 시작보다 이르면 자정을 넘는 구간)', 'time')}
       <div className="full-row">
         <div className="muted">허용 요일 (선택 없으면 전체)</div>
         <div className="toolbar inline">

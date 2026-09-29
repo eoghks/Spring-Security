@@ -38,6 +38,13 @@ public record AccessConditionRequest(
 		return validFrom == null || validTo == null || !validFrom.isAfter(validTo);
 	}
 
+	/** 시작 = 종료면 그 1분만 허용되는 뜻밖의 조건이 되므로 거부한다(하루 종일이면 시간을 비운다) */
+	@JsonIgnore
+	@AssertTrue(message = "시작 시각과 종료 시각이 같을 수 없습니다(하루 종일이면 비워 두세요).")
+	public boolean isTimeRangeValid() {
+		return startTime == null || endTime == null || !startTime.equals(endTime);
+	}
+
 	public AccessConditionSnapshot toSnapshot() {
 		return AccessConditionSnapshot.builder()
 				.allowedIps(allowedIps.stream().map(String::trim).distinct().toList())

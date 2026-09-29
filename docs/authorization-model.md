@@ -116,7 +116,7 @@ API Key(api_keys) ──< api_key_actions >┘
 | allowed_ips | 콤마 구분 단일 IP 또는 CIDR(IPv4/IPv6). 하나라도 일치하면 통과 |
 | valid_from / valid_to | 시작일·종료일 **당일 포함** |
 | allowed_days | `MON,TUE,...` 중 오늘 요일 포함 |
-| start_time / end_time | 경계 포함. 시작 > 종료이면 자정을 넘는 구간(예: 22:00~06:00) |
+| start_time / end_time | 경계 포함, 분 단위(종료 18:00 이면 18:00:59 까지). 시작 > 종료이면 자정을 넘는 구간(예: 22:00~06:00)이고, 자정 이후 부분(00:00~종료)의 요일은 **시작한 날(전날)** 기준. 시작 = 종료는 저장 시 400 |
 
 - 인증된 요청마다 `AccessConditionFilter` 가 검사한다. 위반 시 **403 `ACCESS_CONDITION_DENIED`** — 구체 사유(IP/기간/요일/시간)는 응답에 주지 않고 로그에만 남긴다(IP 는 마스킹).
 - 로그인(`/api/auth/login`)·재발급(`/api/auth/refresh`) 시에도 같은 판정기로 검사해, 조건 밖에서는 토큰 자체를 발급하지 않는다(같은 403 코드).
