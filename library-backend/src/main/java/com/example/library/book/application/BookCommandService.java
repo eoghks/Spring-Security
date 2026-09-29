@@ -6,6 +6,7 @@ import com.example.library.book.domain.Book;
 import com.example.library.book.domain.BookRepository;
 import com.example.library.common.error.BusinessException;
 import com.example.library.common.error.ErrorCode;
+import com.example.library.loan.domain.LoanRepository;
 import java.time.Clock;
 import java.time.LocalDateTime;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class BookCommandService {
 
 	private final BookRepository bookRepository;
+	private final LoanRepository loanRepository;
 	private final Clock clock;
 
 	public BookResponse create(BookRequest request) {
@@ -53,6 +55,9 @@ public class BookCommandService {
 		Book book = find(id);
 		if (book.loanedQuantity() > 0) {
 			throw new BusinessException(ErrorCode.BOOK_HAS_ACTIVE_LOANS);
+		}
+		if (loanRepository.existsByBookId(id)) {
+			throw new BusinessException(ErrorCode.BOOK_HAS_LOAN_HISTORY);
 		}
 		bookRepository.delete(book);
 	}

@@ -54,6 +54,7 @@ public enum ErrorCode {
 	ALREADY_BORROWED(HttpStatus.CONFLICT, "이미 대출 중인 도서입니다."),
 	ALREADY_RETURNED(HttpStatus.CONFLICT, "이미 반납된 대출입니다."),
 	BOOK_HAS_ACTIVE_LOANS(HttpStatus.CONFLICT, "대출 중인 도서는 삭제할 수 없습니다."),
+	BOOK_HAS_LOAN_HISTORY(HttpStatus.CONFLICT, "대출 이력이 있는 도서는 삭제할 수 없습니다. 보유 수량을 0 으로 조정하세요."),
 	API_KEY_ALREADY_REVOKED(HttpStatus.CONFLICT, "이미 폐기된 API Key 입니다."),
 
 	// 서버 오류(500)

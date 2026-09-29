@@ -1,0 +1,87 @@
+package com.example.library.loan.application;
+
+import com.example.library.book.domain.Book;
+import com.example.library.book.domain.BookRepository;
+import com.example.library.common.error.BusinessException;
+import com.example.library.common.error.ErrorCode;
+import com.example.library.loan.api.LoanResponse;
+import com.example.library.loan.domain.Loan;
+import com.example.library.loan.domain.LoanPolicy;
+import com.example.library.loan.domain.LoanRepository;
+import com.example.library.user.domain.User;
+import com.example.library.user.domain.UserRepository;
+import java.time.Clock;
+import java.time.LocalDate;
+import java.util.List;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+/**
+ * 대출·반납 처리. 회원 본인 대출과 사서 대행 대출이 같은 규칙을 쓴다.
+ */
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class LoanService {
+
+	private final LoanRepository loanRepository;
+	private final BookRepository bookRepository;
+	private final UserRepository userRepository;
+	private final Clock clock;
+
+	/**
+	 * 대출한다. 같은 사용자의 동시 대출이 5권 제한을 넘지 않도록 사용자 행을 잠근 뒤 검사한다.
+	 */
+	public LoanResponse borrow(Long userId, Long bookId) {
+		userRepository.findForUpdate(userId).orElseThrow(() -> new BusinessException(ErrorCode.USER_NOT_FOUND));
+		LocalDate today = LocalDate.now(clock);
+		LoanPolicy.validateBorrow(
+				loanRepository.countByUserIdAndReturnedDateIsNull(userId),
+				loanRepository.existsByUserIdAndReturnedDateIsNullAndDueDateBefore(userId, today),
+				loanRepository.existsByUserIdAndBookIdAndReturnedDateIsNull(userId, bookId));
+		if (!bookRepository.existsById(bookId)) {
+			throw new BusinessException(ErrorCode.BOOK_NOT_FOUND);
+		}
+		if (bookRepository.decrementAvailable(bookId) == 0) {
+			throw new BusinessException(ErrorCode.BOOK_NOT_AVAILABLE);
+		}
+		// 조건부 UPDATE 가 영속성 컨텍스트를 비우므로 참조를 다시 얻는다
+		User user = userRepository.getReferenceById(userId);
+		Book book = bookRepository.getReferenceById(bookId);
+		Loan loan = loanRepository.save(Loan.start(user, book, today));
+		return LoanResponse.of(loan, today);
+	}
+
+	/** 본인 대출 반납. 남의 대출은 존재 여부를 드러내지 않도록 LOAN_NOT_FOUND 로 응답한다 */
+	public LoanResponse returnMine(Long userId, Long loanId) {
+		Loan loan = loanRepository.findById(loanId)
+				.filter(found -> found.getUser().getId().equals(userId))
+				.orElseThrow(() -> new BusinessException(ErrorCode.LOAN_NOT_FOUND));
+		return returnLoan(loan);
+	}
+
+	/** 사서 반납 처리 */
+	public LoanResponse returnAny(Long loanId) {
+		Loan loan = loanRepository.findById(loanId)
+				.orElseThrow(() -> new BusinessException(ErrorCode.LOAN_NOT_FOUND));
+		return returnLoan(loan);
+	}
+
+	@Transactional(readOnly = true)
+	public List<LoanResponse> myLoans(Long userId) {
+		LocalDate today = LocalDate.now(clock);
+		return loanRepository.findByUserIdOrderByIdDesc(userId).stream()
+				.map(loan -> LoanResponse.of(loan, today))
+				.toList();
+	}
+
+	private LoanResponse returnLoan(Loan loan) {
+		LocalDate today = LocalDate.now(clock);
+		loan.returnBook(today);
+		// 조건부 UPDATE 가 영속성 컨텍스트를 비우므로 응답을 먼저 만든다
+		LoanResponse response = LoanResponse.of(loan, today);
+		bookRepository.incrementAvailable(loan.getBook().getId());
+		return response;
+	}
+}
