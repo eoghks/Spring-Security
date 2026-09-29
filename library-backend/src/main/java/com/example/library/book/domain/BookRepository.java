@@ -23,6 +23,12 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 	@Query("select distinct b.category from Book b order by b.category")
 	List<String> findCategories();
 
+	@Query("select coalesce(sum(b.totalQuantity), 0) from Book b")
+	long sumTotalQuantity();
+
+	@Query("select coalesce(sum(b.availableQuantity), 0) from Book b")
+	long sumAvailableQuantity();
+
 	boolean existsByIsbn(String isbn);
 
 	boolean existsByIsbnAndIdNot(String isbn, Long id);
