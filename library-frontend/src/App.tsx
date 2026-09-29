@@ -5,6 +5,7 @@ import { HomeRedirect, Layout } from './components/Layout';
 import { NoticeProvider } from './components/Notice';
 import { RequireMenu } from './components/RequireMenu';
 import AccessConditionPage from './pages/AccessConditionPage';
+import ApiKeyPage from './pages/ApiKeyPage';
 import BookDetailPage from './pages/BookDetailPage';
 import BookListPage from './pages/BookListPage';
 import BookManagementPage from './pages/BookManagementPage';
@@ -54,6 +55,7 @@ export default function App() {
                   path="/access-conditions"
                   element={<RequireMenu codes={['ACCESS_CONDITION']}><AccessConditionPage /></RequireMenu>}
                 />
+                <Route path="/api-keys" element={<RequireMenu codes={['API_KEY']}><ApiKeyPage /></RequireMenu>} />
                 <Route path="*" element={<HomeRedirect />} />
               </Route>
             </Routes>
