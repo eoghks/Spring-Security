@@ -120,3 +120,16 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/java,eclipse,windows
+### 도서관 프로젝트 (library-backend / library-frontend) ###
+# Gradle wrapper jar 는 빌드 재현을 위해 추적한다
+!**/gradle/wrapper/gradle-wrapper.jar
+.gradle/
+**/build/
+.idea/
+*.iml
+# 로컬 H2 데이터 파일
+library-backend/data/
+# 프론트엔드
+node_modules/
+library-frontend/dist/
+*.tsbuildinfo
