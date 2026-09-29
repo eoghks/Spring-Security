@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
  * Refresh 토큰 발급·회전·폐기.
  * 원문은 발급 시 클라이언트에만 주고 DB 에는 해시만 저장한다.
  * 이미 폐기된 토큰이 다시 제시되면 탈취로 보고 해당 사용자의 토큰을 모두 폐기한다(재사용 탐지).
+ * 소비는 조건부 UPDATE(미폐기일 때만)로 원자화해, 같은 토큰을 동시에 제시해도 하나만 성공하고 나머지는 재사용으로 본다.
  */
 @Slf4j
 @Service
@@ -53,15 +54,23 @@ public class RefreshTokenService {
 				.orElseThrow(() -> new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN));
 		LocalDateTime now = LocalDateTime.now(clock);
 		if (token.isRevoked()) {
-			log.warn("폐기된 Refresh 토큰 재사용 탐지 — 사용자 토큰 전체 폐기: userId={}", token.getUserId());
-			refreshTokenRepository.revokeAllByUserId(token.getUserId(), now);
-			throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
+			throw reuseDetected(token.getUserId(), now);
 		}
 		if (token.isExpired(now)) {
 			throw new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
 		}
-		token.revoke(now);
+		if (refreshTokenRepository.revokeIfActive(token.getId(), now) == 0) {
+			// 읽은 뒤 다른 요청이 먼저 소비했다 — 동시 제시도 재사용으로 본다
+			throw reuseDetected(token.getUserId(), now);
+		}
 		return token.getUserId();
+	}
+
+	/** 재사용 탐지: 사용자의 살아 있는 토큰을 모두 폐기하고 401 예외를 돌려준다 */
+	private BusinessException reuseDetected(Long userId, LocalDateTime now) {
+		log.warn("폐기된 Refresh 토큰 재사용 탐지 — 사용자 토큰 전체 폐기: userId={}", userId);
+		refreshTokenRepository.revokeAllByUserId(userId, now);
+		return new BusinessException(ErrorCode.INVALID_REFRESH_TOKEN);
 	}
 
 	/** 로그아웃: 제시된 토큰을 폐기한다(없거나 이미 폐기돼도 성공으로 본다) */
