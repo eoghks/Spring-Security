@@ -2,6 +2,8 @@ package com.example.library.auth.api;
 
 import com.example.library.auth.application.AuthService;
 import com.example.library.auth.application.SignupService;
+import com.example.library.common.net.ClientIpResolver;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -21,6 +23,7 @@ public class AuthController {
 
 	private final SignupService signupService;
 	private final AuthService authService;
+	private final ClientIpResolver clientIpResolver;
 
 	@PostMapping("/signup")
 	@ResponseStatus(HttpStatus.CREATED)
@@ -29,14 +32,14 @@ public class AuthController {
 	}
 
 	@PostMapping("/login")
-	public TokenResponse login(@Valid @RequestBody LoginRequest request) {
-		return authService.login(request);
+	public TokenResponse login(@Valid @RequestBody LoginRequest request, HttpServletRequest httpRequest) {
+		return authService.login(request, clientIpResolver.resolve(httpRequest));
 	}
 
 	/** Refresh 토큰 회전 재발급 */
 	@PostMapping("/refresh")
-	public TokenResponse refresh(@Valid @RequestBody RefreshTokenRequest request) {
-		return authService.refresh(request.refreshToken());
+	public TokenResponse refresh(@Valid @RequestBody RefreshTokenRequest request, HttpServletRequest httpRequest) {
+		return authService.refresh(request.refreshToken(), clientIpResolver.resolve(httpRequest));
 	}
 
 	@PostMapping("/logout")
