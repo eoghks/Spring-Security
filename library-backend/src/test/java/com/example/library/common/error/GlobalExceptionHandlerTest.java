@@ -2,6 +2,7 @@ package com.example.library.common.error;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.servlet.ServletException;
 import java.sql.SQLException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -9,9 +10,11 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.system.CapturedOutput;
 import org.springframework.boot.test.system.OutputCaptureExtension;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ExtendWith(OutputCaptureExtension.class)
 class GlobalExceptionHandlerTest {
@@ -41,5 +44,28 @@ class GlobalExceptionHandlerTest {
 
 		assertThat(response.getStatusCode().value()).isEqualTo(500);
 		assertThat(output).contains("처리되지 않은 무결성 제약 위반").doesNotContain("secret-value");
+	}
+
+	@Test
+	@DisplayName("상태 코드가 없는 서블릿 예외는 500 이고 원인을 스택과 함께 ERROR 로 남긴다")
+	void servletExceptionWithoutStatusIsLogged(CapturedOutput output) {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/books");
+
+		ResponseEntity<ErrorResponse> response = handler.handleSpringMvc(new ServletException("원인-추적용-메시지"), request);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(500);
+		assertThat(output).contains("처리되지 않은 서블릿 예외").contains("원인-추적용-메시지");
+	}
+
+	@Test
+	@DisplayName("404 같은 표준 예외는 상태 코드대로 변환하고 ERROR 로그를 남기지 않는다")
+	void standardExceptionIsNotLoggedAsError(CapturedOutput output) {
+		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/api/none");
+
+		ResponseEntity<ErrorResponse> response = handler.handleSpringMvc(
+				new NoResourceFoundException(HttpMethod.GET, "/api/none"), request);
+
+		assertThat(response.getStatusCode().value()).isEqualTo(404);
+		assertThat(output).doesNotContain("처리되지 않은 서블릿 예외");
 	}
 }
