@@ -18,7 +18,7 @@ export function Layout() {
   return (
     <div className="layout">
       <aside className="sidebar">
-        <div className="brand">📚 도서관</div>
+        <div className="brand">도서관 대출 시스템</div>
         <nav>
           {MENUS.filter((menu) => hasMenu(menu.code)).map((menu) => (
             <NavLink key={menu.code} to={menu.path} className={({ isActive }) => (isActive ? 'active' : '')}>

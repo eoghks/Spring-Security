@@ -3,6 +3,9 @@ import { AuthProvider } from './auth/AuthContext';
 import { PermissionProvider } from './auth/PermissionContext';
 import { HomeRedirect, Layout } from './components/Layout';
 import { NoticeProvider } from './components/Notice';
+import { RequireMenu } from './components/RequireMenu';
+import BookDetailPage from './pages/BookDetailPage';
+import BookListPage from './pages/BookListPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 
@@ -17,6 +20,11 @@ export default function App() {
               <Route path="/signup" element={<SignupPage />} />
               <Route element={<Layout />}>
                 <Route index element={<HomeRedirect />} />
+                <Route path="/books" element={<RequireMenu codes={['BOOK']}><BookListPage /></RequireMenu>} />
+                <Route
+                  path="/books/:id"
+                  element={<RequireMenu codes={['BOOK', 'BOOK_MANAGE']}><BookDetailPage /></RequireMenu>}
+                />
                 <Route path="*" element={<HomeRedirect />} />
               </Route>
             </Routes>
