@@ -8,7 +8,6 @@ import com.example.library.security.UserPrincipal;
 import com.example.library.user.domain.UserRepository;
 import java.util.Collection;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 /**
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Component;
  * </ul>
  * 호출하는 서비스의 트랜잭션 안에서 쓴다.
  */
-@Slf4j
 @Component
 @RequiredArgsConstructor
 public class GrantGuard {
@@ -41,7 +39,7 @@ public class GrantGuard {
 		}
 	}
 
-	/** 자기 역할(또는 자기 역할이 보유한 액션)을 대상으로 한 변경을 막는다 */
+	/** 자기 역할을 대상으로 한 권한 변경을 막는다 */
 	public void ensureNotOwnRole(Role actorRole, Long targetRoleId) {
 		if (actorRole.getId().equals(targetRoleId)) {
 			throw new BusinessException(ErrorCode.CANNOT_EDIT_OWN_ROLE);
