@@ -115,12 +115,12 @@ INSERT INTO authenticated_urls (http_method, url_pattern, description) VALUES ('
 
 -- ---------------------------------------------------------------------
 -- 역할별 액션 부여
--- ADMIN: 전 액션 / LIBRARIAN: 도서 관리·대출 처리 / MEMBER: 도서 조회·대출 신청·내 대출·반납
+-- ADMIN: 전 액션 / LIBRARIAN: 대시보드·도서 관리·대출 처리 / MEMBER: 도서 조회·대출 신청·내 대출·반납
+-- (LIBRARIAN 은 BOOK:READ 없이 BOOK_MANAGE:READ 로 같은 도서 조회 URL 을 호출한다 — OR 규칙)
 -- ---------------------------------------------------------------------
 INSERT INTO role_actions (role_id, action_id) SELECT r.id, a.id FROM roles r CROSS JOIN menu_actions a WHERE r.code = 'ADMIN';
 
 INSERT INTO role_actions (role_id, action_id) SELECT r.id, a.id FROM roles r CROSS JOIN menu_actions a JOIN menus m ON m.id = a.menu_id WHERE r.code = 'LIBRARIAN' AND m.code IN ('DASHBOARD', 'LOAN_MANAGE', 'BOOK_MANAGE');
-INSERT INTO role_actions (role_id, action_id) SELECT r.id, a.id FROM roles r CROSS JOIN menu_actions a JOIN menus m ON m.id = a.menu_id WHERE r.code = 'LIBRARIAN' AND m.code = 'BOOK' AND a.code = 'READ';
 
 INSERT INTO role_actions (role_id, action_id) SELECT r.id, a.id FROM roles r CROSS JOIN menu_actions a JOIN menus m ON m.id = a.menu_id WHERE r.code = 'MEMBER' AND m.code IN ('BOOK', 'MY_LOAN');
 
