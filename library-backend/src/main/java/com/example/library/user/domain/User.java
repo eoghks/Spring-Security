@@ -14,11 +14,15 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.DynamicUpdate;
 
 /**
  * 회원. 역할은 1개만 가진다.
+ * 로그인 실패 횟수·잠금은 동시성 때문에 UserRepository 의 원자 UPDATE 로 바꾼다.
+ * 변경된 컬럼만 UPDATE 해(@DynamicUpdate) 역할 변경 등이 동시에 바뀐 실패 횟수·잠금을 옛 값으로 덮어쓰지 않게 한다.
  */
 @Entity
+@DynamicUpdate
 @Table(name = "users")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -56,26 +60,6 @@ public class User {
 		this.email = email;
 		this.role = role;
 		this.createdAt = createdAt;
-	}
-
-	/**
-	 * 로그인 실패를 기록하고, 최대 횟수에 도달하면 계정을 잠근다.
-	 *
-	 * @return 이번 실패로 잠겼으면 true
-	 */
-	public boolean recordLoginFailure(int maxAttempts, LocalDateTime now) {
-		failedLoginCount++;
-		if (!locked && failedLoginCount >= maxAttempts) {
-			locked = true;
-			lockedAt = now;
-			return true;
-		}
-		return false;
-	}
-
-	/** 로그인 성공 시 실패 횟수를 초기화한다 */
-	public void resetLoginFailures() {
-		failedLoginCount = 0;
 	}
 
 	/** 관리자 잠금 해제 */
