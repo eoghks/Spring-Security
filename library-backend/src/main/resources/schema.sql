@@ -132,6 +132,8 @@ CREATE TABLE IF NOT EXISTS books (
     total_quantity      INT          NOT NULL,
     available_quantity  INT          NOT NULL,
     created_at          TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    -- 낙관적 락 버전. 도서 수정이 동시에 커밋된 대출·반납의 재고 변경을 덮어쓰지 않게 한다(재고 증감 UPDATE 도 함께 올린다)
+    version             BIGINT       NOT NULL DEFAULT 0,
     CONSTRAINT ck_books_quantity CHECK (available_quantity >= 0 AND available_quantity <= total_quantity)
 );
 

@@ -33,13 +33,18 @@ public interface BookRepository extends JpaRepository<Book, Long> {
 
 	boolean existsByIsbnAndIdNot(String isbn, Long id);
 
-	/** 재고가 있을 때만 1 감소(동시 대출 경합 방지). 갱신 건수 0 이면 재고 없음 */
+	/**
+	 * 재고가 있을 때만 1 감소(동시 대출 경합 방지). 갱신 건수 0 이면 재고 없음.
+	 * 버전도 올려, 이 도서를 읽어 둔 수정 요청이 옛 재고로 덮어쓰지 못하고 낙관적 락 충돌이 나게 한다.
+	 */
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
-	@Query("update Book b set b.availableQuantity = b.availableQuantity - 1 where b.id = :id and b.availableQuantity > 0")
+	@Query("update Book b set b.availableQuantity = b.availableQuantity - 1, b.version = b.version + 1 "
+			+ "where b.id = :id and b.availableQuantity > 0")
 	int decrementAvailable(@Param("id") Long id);
 
-	/** 반납 시 1 증가(보유 수량을 넘지 않게) */
+	/** 반납 시 1 증가(보유 수량을 넘지 않게). 감소와 같은 이유로 버전도 올린다 */
 	@Modifying(flushAutomatically = true, clearAutomatically = true)
-	@Query("update Book b set b.availableQuantity = b.availableQuantity + 1 where b.id = :id and b.availableQuantity < b.totalQuantity")
+	@Query("update Book b set b.availableQuantity = b.availableQuantity + 1, b.version = b.version + 1 "
+			+ "where b.id = :id and b.availableQuantity < b.totalQuantity")
 	int incrementAvailable(@Param("id") Long id);
 }

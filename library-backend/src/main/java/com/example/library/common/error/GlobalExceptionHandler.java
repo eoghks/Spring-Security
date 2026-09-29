@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -79,6 +80,15 @@ public class GlobalExceptionHandler {
 							.body(ErrorResponse.of(errorCode, request.getRequestURI()));
 				})
 				.orElseGet(() -> handleUnexpected(e, request));
+	}
+
+	/** 낙관적 락 충돌(예: 도서 수정 중 대출·반납이 먼저 커밋됨)은 덮어쓰지 않고 409 로 알린다 */
+	@ExceptionHandler(OptimisticLockingFailureException.class)
+	public ResponseEntity<ErrorResponse> handleOptimisticLock(OptimisticLockingFailureException e,
+			HttpServletRequest request) {
+		log.info("동시 수정 충돌을 409 로 응답: {}", request.getRequestURI());
+		return ResponseEntity.status(ErrorCode.CONCURRENT_MODIFICATION.getStatus())
+				.body(ErrorResponse.of(ErrorCode.CONCURRENT_MODIFICATION, request.getRequestURI()));
 	}
 
 	@ExceptionHandler(Exception.class)

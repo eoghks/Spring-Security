@@ -7,6 +7,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -15,6 +16,7 @@ import lombok.NoArgsConstructor;
 
 /**
  * 도서. 대출 가능 수량 증감은 동시성 때문에 리포지토리의 조건부 UPDATE 로 처리한다.
+ * 도서 수정(엔티티 저장)이 그 사이 커밋된 재고 변경을 덮어쓰지 않도록 낙관적 락(version)을 둔다 — 충돌하면 409.
  */
 @Entity
 @Table(name = "books")
@@ -41,6 +43,10 @@ public class Book {
 	private int availableQuantity;
 
 	private LocalDateTime createdAt;
+
+	/** 낙관적 락 버전. 재고 증감 UPDATE 도 이 값을 올려 수정 요청과의 충돌을 드러낸다 */
+	@Version
+	private long version;
 
 	@Builder
 	private Book(String isbn, String title, String author, String publisher, String category, int totalQuantity,

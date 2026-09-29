@@ -57,6 +57,7 @@ public enum ErrorCode {
 	BOOK_HAS_ACTIVE_LOANS(HttpStatus.CONFLICT, "대출 중인 도서는 삭제할 수 없습니다."),
 	BOOK_HAS_LOAN_HISTORY(HttpStatus.CONFLICT, "대출 이력이 있는 도서는 삭제할 수 없습니다. 보유 수량을 0 으로 조정하세요."),
 	API_KEY_ALREADY_REVOKED(HttpStatus.CONFLICT, "이미 폐기된 API Key 입니다."),
+	CONCURRENT_MODIFICATION(HttpStatus.CONFLICT, "다른 요청이 먼저 변경했습니다. 새로 조회한 뒤 다시 시도하세요."),
 
 	// 요청 과다(429)
 	TOO_MANY_REQUESTS(HttpStatus.TOO_MANY_REQUESTS, "요청이 너무 많습니다. 잠시 후 다시 시도하세요."),
