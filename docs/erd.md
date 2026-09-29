@@ -26,7 +26,7 @@ erDiagram
     }
     users {
         BIGINT id PK
-        VARCHAR username UK
+        VARCHAR username UK "uk_users_username"
         VARCHAR password "BCrypt"
         VARCHAR name
         VARCHAR email

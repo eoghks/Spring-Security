@@ -142,6 +142,7 @@ java -jar library-backend.jar --server.port=8081   # Hazelcast 포트는 5701 �
 | 토큰을 localStorage 에 보관(프론트) | 구현 단순, 새로고침 유지 | XSS 에 노출 가능. 운영이라면 Refresh 토큰은 HttpOnly·SameSite 쿠키 + CSRF 대책을 권장 |
 | 관리자(ADMIN) 역할 권한 편집 금지, 자기 역할 변경 금지 | 관리자가 스스로 권한을 잃어 시스템을 못 쓰게 되는 사고 방지 | 관리자 권한 조정은 시드/DB 로만 |
 | API Key 발급자는 자기 보유 액션만 부여 | 발급 권한만 가진 사용자의 권한 상승 방지 | — |
+| 회원가입 중복은 사전 검사 + 이름 붙인 유니크 제약(`uk_users_username`) | 동시 가입 경합으로 사전 검사를 둘 다 통과해도 DB 가 막고, 전역 처리기가 이 제약 위반만 409 `DUPLICATE_USERNAME` 으로 번역 | 제약 이름을 코드가 알고 있어야 함(알 수 없는 제약 위반은 500 유지) |
 | 연체 판정은 반납 예정일로 직접 계산 | 배치(`OverdueScheduler`)가 늦어도 대출 제한이 정확 | status 컬럼은 목록 필터·통계용 |
 
 ## 7. 오류 응답
