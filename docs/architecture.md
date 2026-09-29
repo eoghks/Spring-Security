@@ -148,6 +148,7 @@ HAZELCAST_INTERFACE=10.0.0.* HAZELCAST_MEMBERS=10.0.0.11,10.0.0.12 java -jar lib
 | permitAll 은 코드, 나머지는 DB | 공개 범위 변경은 배포·리뷰를 거치게 | 공개 URL 추가 시 재배포 필요 |
 | 회원 본인 API 와 관리 API 의 URL 분리 (`/api/loans/{id}/return` vs `/api/loan-management/{id}/return`) | URL 인가만으로 "본인 것" 과 "전체" 를 구분 | 비슷한 API 가 두 벌 |
 | 재고 감소는 조건부 UPDATE, 대출 권수 검사는 사용자 행 잠금 | 동시 대출에도 재고 음수·5권 초과가 생기지 않음 | 같은 사용자의 대출 요청이 직렬화됨 |
+| 반납은 대출 행을 `PESSIMISTIC_WRITE` 로 잠근 뒤 판정 | 같은 대출을 동시에 반납(더블클릭, 회원·사서 동시 처리)해도 재고는 한 번만 늘고 두 번째는 409 `ALREADY_RETURNED` | 같은 대출의 반납 요청이 직렬화됨 |
 | 도서에 낙관적 락(`version`), 재고 증감 UPDATE 도 버전을 올림 | 도서 수정이 그 사이 커밋된 대출·반납의 재고 변경을 옛 값으로 덮어쓰지 않음(충돌 시 409 `CONCURRENT_MODIFICATION`) | 수정 중 대출이 일어나면 사서가 다시 저장해야 함 |
 | 토큰을 localStorage 에 보관(프론트) | 구현 단순, 새로고침 유지 | XSS 에 노출 가능. 운영이라면 Refresh 토큰은 HttpOnly·SameSite 쿠키 + CSRF 대책을 권장 |
 | 관리자(ADMIN) 역할 권한 편집 금지, 자기 역할 변경 금지 | 관리자가 스스로 권한을 잃어 시스템을 못 쓰게 되는 사고 방지 | 관리자 권한 조정은 시드/DB 로만 |

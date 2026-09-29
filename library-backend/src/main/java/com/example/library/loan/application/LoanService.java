@@ -53,17 +53,20 @@ public class LoanService {
 		return LoanResponse.of(loan, today);
 	}
 
-	/** 본인 대출 반납. 남의 대출은 존재 여부를 드러내지 않도록 LOAN_NOT_FOUND 로 응답한다 */
+	/**
+	 * 본인 대출 반납. 남의 대출은 존재 여부를 드러내지 않도록 LOAN_NOT_FOUND 로 응답한다.
+	 * 반납은 대출 행을 잠근 뒤 판정해, 같은 대출을 동시에 반납해도 재고는 한 번만 늘고 나머지는 409 ALREADY_RETURNED 다.
+	 */
 	public LoanResponse returnMine(Long userId, Long loanId) {
-		Loan loan = loanRepository.findById(loanId)
+		Loan loan = loanRepository.findForUpdate(loanId)
 				.filter(found -> found.getUser().getId().equals(userId))
 				.orElseThrow(() -> new BusinessException(ErrorCode.LOAN_NOT_FOUND));
 		return returnLoan(loan);
 	}
 
-	/** 사서 반납 처리 */
+	/** 사서 반납 처리(본인 반납과 같은 행 잠금으로 직렬화) */
 	public LoanResponse returnAny(Long loanId) {
-		Loan loan = loanRepository.findById(loanId)
+		Loan loan = loanRepository.findForUpdate(loanId)
 				.orElseThrow(() -> new BusinessException(ErrorCode.LOAN_NOT_FOUND));
 		return returnLoan(loan);
 	}
