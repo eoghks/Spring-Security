@@ -81,6 +81,32 @@ class AccessConditionEvaluatorTest {
 	}
 
 	@Test
+	@DisplayName("시간: 종료 시각은 그 1분 전체를 포함한다(18:00 이면 18:00:59 까지)")
+	void endMinuteIsInclusive() {
+		AccessConditionSnapshot office = AccessConditionSnapshot.builder()
+				.startTime(LocalTime.of(9, 0)).endTime(LocalTime.of(18, 0)).build();
+
+		assertThat(evaluate(office, OFFICE_IP, MONDAY_10AM.withHour(18).withSecond(30))).isEmpty();
+		assertThat(evaluate(office, OFFICE_IP, MONDAY_10AM.withHour(18).withSecond(59))).isEmpty();
+		assertThat(evaluate(office, OFFICE_IP, MONDAY_10AM.withHour(18).withMinute(1))).contains("허용 시간대 밖");
+	}
+
+	@Test
+	@DisplayName("요일 + 자정을 넘는 구간: 자정 이후 부분은 시작한 날(전날) 요일로 판정한다")
+	void overnightWindowUsesStartDay() {
+		AccessConditionSnapshot mondayNight = AccessConditionSnapshot.builder()
+				.allowedDays(List.of(DayOfWeek.MONDAY))
+				.startTime(LocalTime.of(22, 0)).endTime(LocalTime.of(6, 0)).build();
+		LocalDateTime tuesday = MONDAY_10AM.plusDays(1);
+
+		assertThat(evaluate(mondayNight, OFFICE_IP, MONDAY_10AM.withHour(23))).isEmpty();
+		assertThat(evaluate(mondayNight, OFFICE_IP, tuesday.withHour(2))).isEmpty();
+		assertThat(evaluate(mondayNight, OFFICE_IP, tuesday.withHour(6).withSecond(30))).isEmpty();
+		assertThat(evaluate(mondayNight, OFFICE_IP, MONDAY_10AM.withHour(2))).contains("허용되지 않은 요일");
+		assertThat(evaluate(mondayNight, OFFICE_IP, tuesday.withHour(23))).contains("허용되지 않은 요일");
+	}
+
+	@Test
 	@DisplayName("엔티티 CSV 값과 스냅샷이 서로 변환된다")
 	void entityRoundTrip() {
 		AccessConditionSnapshot original = AccessConditionSnapshot.builder()

@@ -122,6 +122,16 @@ class AccessConditionIntegrationTest extends IntegrationTestSupport {
 	}
 
 	@Test
+	@DisplayName("시작 시각과 종료 시각이 같으면 400(그 1분만 허용되는 뜻밖의 조건 방지)")
+	void sameStartAndEndTimeRejected() throws Exception {
+		saveCondition(userId("member"), """
+				{"allowedIps":[],"allowedDays":[],"startTime":"09:00","endTime":"09:00"}
+				""")
+				.andExpect(status().isBadRequest())
+				.andExpect(jsonPath("$.fieldErrors[0].field").value("timeRangeValid"));
+	}
+
+	@Test
 	@DisplayName("일반 회원은 접속 조건을 관리할 수 없다(403)")
 	void memberForbidden() throws Exception {
 		mockMvc.perform(get("/api/admin/access-conditions").header("Authorization", bearer("member", MEMBER_PASSWORD)))
