@@ -72,13 +72,16 @@ JWT 에 역할·권한을 넣으면 관리자가 권한을 회수해도 토큰 �
 | `api-keys` | 키 해시 → 부여 액션·허용 IP·만료·폐기 | API Key 발급·폐기 |
 | `api-key-misses` | DB 에 없는 키 해시 → 표시(음성 캐시, 항목 TTL 60초) | API Key 발급·폐기(같은 해시) |
 | `api-key-failures` | "IP\|분" → API Key 인증 실패 횟수(TTL 120초) | 자연 만료 |
+| `authz-generations` | "user:ID"·"role:ID"·"apikey:해시" → evict 세대 번호 | evict 때 증가(TTL 600초) |
 | `login-failures` | "IP\|분" → 로그인 실패 횟수(TTL 120초) | 자연 만료 |
 
 - **캐시 미스면 DB 에서 읽어 채운다. 미스를 통과로 취급하지 않는다.**
 - evict 는 `@TransactionalEventListener(AFTER_COMMIT)` 에서만 한다. 커밋 전에 지우면 다른 요청이 옛 DB 값을 다시 적재할 수 있다.
 - 값 객체는 `Serializable`(serialVersionUID 명시). `Optional` 은 직렬화되지 않으므로 필드는 nullable 로 두고 접근자에서 `Optional` 로 감싼다.
 - 안전장치: 모든 IMap 에 TTL 600초. evict 가 어떤 이유로 누락돼도 오래된 권한이 무기한 남지 않는다.
-- 알려진 경합: "캐시 미스 → DB 읽기" 와 "evict" 가 동시에 일어나면 옛 값이 다시 들어갈 수 있다(짧은 창). TTL 이 상한을 보장한다.
+- 적재·evict 경합: "캐시 미스 → 옛 DB 값 읽기 → (변경 커밋·evict) → 옛 값 저장" 순서가 되면 옛 권한이 TTL 까지 남을 수 있다.
+  그래서 evict 는 키별 **세대 번호**(`authz-generations`, `EntryProcessor` 원자 증가)를 먼저 올린 뒤 값을 지우고, 적재는 DB 를 읽기 전 세대를 기억했다가
+  값을 넣은 뒤 세대가 바뀌었으면 방금 넣은 값을 지운다. 경합한 그 요청 하나만 읽은 값으로 처리되고, 다음 요청부터는 새 값을 읽는다.
 
 ### API Key 무차별 대입·DB 부하 방어
 

@@ -25,11 +25,14 @@ public final class CacheNames {
 	/** "클라이언트 IP|분" → 로그인 실패 횟수(분 단위 버킷) */
 	public static final String LOGIN_FAILURES = "login-failures";
 
+	/** "user:ID" / "role:ID" / "apikey:해시" → evict 세대 번호(적재 중 evict 가 끼어들었는지 판정) */
+	public static final String AUTHZ_GENERATIONS = "authz-generations";
+
 	/** 인가 규칙(action_urls) 재로딩 알림 토픽 */
 	public static final String AUTHZ_RELOAD_TOPIC = "authz-rules-reload";
 
 	/** TTL 을 적용할 IMap 목록 */
-	public static final List<String> MAPS = List.of(USER_AUTH, ROLE_ACTIONS, API_KEYS);
+	public static final List<String> MAPS = List.of(USER_AUTH, ROLE_ACTIONS, API_KEYS, AUTHZ_GENERATIONS);
 
 	private CacheNames() {
 	}
