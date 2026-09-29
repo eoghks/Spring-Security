@@ -15,7 +15,9 @@ public final class DataIntegrityErrorTranslator {
 
 	/** 제약 이름(소문자) → 오류 코드 */
 	private static final Map<String, ErrorCode> CONSTRAINT_ERROR_CODES = Map.of(
-			"uk_users_username", ErrorCode.DUPLICATE_USERNAME);
+			"uk_users_username", ErrorCode.DUPLICATE_USERNAME,
+			"uk_books_isbn", ErrorCode.DUPLICATE_ISBN,
+			"uk_action_urls", ErrorCode.DUPLICATE_ACTION_URL);
 
 	private DataIntegrityErrorTranslator() {
 	}
