@@ -1,5 +1,5 @@
-# 개발·수동 검증용 PostgreSQL. 로컬에 이미 떠 있는 5432 와 겹치지 않도록 호스트 포트 55432 를 쓴다.
-# 사용: docker compose up -d  →  ./gradlew bootRun --args='--spring.profiles.active=postgres'
+# 개발·수동 검증용 PostgreSQL. 로컬에 이미 떠 있는 5432 와 겹치지 않도록 호스트 포트 55432 를 쓰고, 약한 개발용 비밀번호라 루프백에만 연다.
+# 사용: docker compose up -d  →  JWT_SECRET=<Base64 32바이트 이상> ./gradlew bootRun --args='--spring.profiles.active=postgres'
 # 정리: docker compose down -v (볼륨까지 삭제)
 services:
   postgres:
@@ -11,7 +11,7 @@ services:
       POSTGRES_PASSWORD: library
       TZ: Asia/Seoul
     ports:
-      - "55432:5432"
+      - "127.0.0.1:55432:5432"
     volumes:
       - library-pgdata:/var/lib/postgresql/data
     healthcheck:
