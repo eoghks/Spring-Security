@@ -18,6 +18,7 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
@@ -68,7 +69,8 @@ public class ApiKeyService {
 				.expiresAt(request.expiresAt())
 				.createdAt(now)
 				.actionIds(actionIds)
-				.allowedIps(new HashSet<>(request.allowedIps()))
+				// 검증(@IpOrCidr)은 앞뒤 공백을 허용하므로 저장 전에 접속 조건과 같은 방식으로 다듬는다
+				.allowedIps(request.allowedIps().stream().map(String::trim).collect(Collectors.toSet()))
 				.build());
 		// 같은 해시가 음성 캐시("없는 키")에 남아 있지 않도록 커밋 후 지운다
 		eventPublisher.publishEvent(new AuthzChangedEvent.ApiKeyChanged(key.hash()));

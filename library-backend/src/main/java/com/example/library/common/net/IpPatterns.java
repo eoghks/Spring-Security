@@ -37,7 +37,7 @@ public final class IpPatterns {
 		return parts.length == 1 || isPrefix(parts[1], ipv4 ? 32 : 128);
 	}
 
-	/** 클라이언트 IP 가 목록 중 하나와 일치하면 true. 목록이 비면 전체 허용 */
+	/** 클라이언트 IP 가 목록 중 하나와 일치하면 true. 목록이 비면 전체 허용. 패턴의 앞뒤 공백은 무시한다 */
 	public static boolean matchesAny(List<String> patterns, String clientIp) {
 		if (patterns.isEmpty()) {
 			return true;
@@ -46,6 +46,7 @@ public final class IpPatterns {
 			return false;
 		}
 		return patterns.stream()
+				.map(String::trim)
 				.filter(IpPatterns::isValid)
 				.anyMatch(pattern -> new IpAddressMatcher(pattern).matches(clientIp));
 	}
