@@ -1,5 +1,8 @@
 package com.example.library.authz.cache;
 
+import com.example.library.access.domain.AccessConditionSnapshot;
+import com.example.library.access.domain.UserAccessCondition;
+import com.example.library.access.domain.UserAccessConditionRepository;
 import com.example.library.authz.domain.MenuAction;
 import com.example.library.authz.domain.MenuActionRepository;
 import com.example.library.authz.domain.RoleRepository;
@@ -24,6 +27,7 @@ public class AuthzSnapshotLoader {
 	private final UserRepository userRepository;
 	private final RoleRepository roleRepository;
 	private final MenuActionRepository menuActionRepository;
+	private final UserAccessConditionRepository accessConditionRepository;
 
 	public Optional<UserAuthSnapshot> loadUser(Long userId) {
 		return userRepository.findWithRoleById(userId).map(this::toSnapshot);
@@ -47,6 +51,9 @@ public class AuthzSnapshotLoader {
 	}
 
 	private UserAuthSnapshot toSnapshot(User user) {
-		return new UserAuthSnapshot(user.getId(), user.getUsername(), user.getRoleId(), user.isLocked());
+		AccessConditionSnapshot condition = accessConditionRepository.findById(user.getId())
+				.map(UserAccessCondition::toSnapshot)
+				.orElseGet(AccessConditionSnapshot::unrestricted);
+		return new UserAuthSnapshot(user.getId(), user.getUsername(), user.getRoleId(), user.isLocked(), condition);
 	}
 }

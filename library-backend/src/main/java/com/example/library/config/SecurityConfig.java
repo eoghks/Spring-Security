@@ -2,12 +2,15 @@ package com.example.library.config;
 
 import com.example.library.auth.token.JwtProvider;
 import com.example.library.authz.cache.AuthzCache;
+import com.example.library.common.net.ClientIpResolver;
+import com.example.library.security.AccessConditionFilter;
 import com.example.library.security.JsonAccessDeniedHandler;
 import com.example.library.security.JsonAuthenticationEntryPoint;
 import com.example.library.security.JwtAuthenticationFilter;
 import com.example.library.security.PublicEndpoints;
 import com.example.library.security.UrlAuthorizationManager;
 import jakarta.servlet.DispatcherType;
+import java.time.Clock;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,6 +35,8 @@ public class SecurityConfig {
 	private final UrlAuthorizationManager urlAuthorizationManager;
 	private final JsonAuthenticationEntryPoint authenticationEntryPoint;
 	private final JsonAccessDeniedHandler accessDeniedHandler;
+	private final ClientIpResolver clientIpResolver;
+	private final Clock clock;
 
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -49,8 +54,11 @@ public class SecurityConfig {
 						.dispatcherTypeMatchers(DispatcherType.ERROR).permitAll()
 						.requestMatchers(PublicEndpoints.requestMatchers()).permitAll()
 						.anyRequest().access(urlAuthorizationManager))
+				// 순서: JWT 인증 → 접속 조건 검사 → (인가) — 필터는 빈으로 등록하지 않아 서블릿 필터로 중복 등록되지 않는다
 				.addFilterBefore(new JwtAuthenticationFilter(jwtProvider, authzCache),
-						UsernamePasswordAuthenticationFilter.class);
+						UsernamePasswordAuthenticationFilter.class)
+				.addFilterAfter(new AccessConditionFilter(authzCache, clientIpResolver, accessDeniedHandler, clock),
+						JwtAuthenticationFilter.class);
 		return http.build();
 	}
 
