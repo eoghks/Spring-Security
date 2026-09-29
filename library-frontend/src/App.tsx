@@ -4,6 +4,7 @@ import { PermissionProvider } from './auth/PermissionContext';
 import { HomeRedirect, Layout } from './components/Layout';
 import { NoticeProvider } from './components/Notice';
 import { RequireMenu } from './components/RequireMenu';
+import AccessConditionPage from './pages/AccessConditionPage';
 import BookDetailPage from './pages/BookDetailPage';
 import BookListPage from './pages/BookListPage';
 import BookManagementPage from './pages/BookManagementPage';
@@ -48,6 +49,10 @@ export default function App() {
                 <Route
                   path="/role-management"
                   element={<RequireMenu codes={['ROLE_MANAGE']}><RoleManagementPage /></RequireMenu>}
+                />
+                <Route
+                  path="/access-conditions"
+                  element={<RequireMenu codes={['ACCESS_CONDITION']}><AccessConditionPage /></RequireMenu>}
                 />
                 <Route path="*" element={<HomeRedirect />} />
               </Route>
